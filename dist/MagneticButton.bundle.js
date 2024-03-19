@@ -479,315 +479,8 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-// EXTERNAL MODULE: ./node_modules/lodash/uniqueId.js
-var uniqueId = __webpack_require__(200);
-var uniqueId_default = /*#__PURE__*/__webpack_require__.n(uniqueId);
-;// CONCATENATED MODULE: ./src/lib/utils/StringUtils.js
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var StringUtils = /*#__PURE__*/function () {
-  function StringUtils() {
-    _classCallCheck(this, StringUtils);
-  }
-  return _createClass(StringUtils, null, [{
-    key: "pascalToKebab",
-    value: function pascalToKebab(inputString) {
-      return inputString.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
-    }
-  }, {
-    key: "pascalToCamel",
-    value: function pascalToCamel(str) {
-      if (!str) return "";
-      return str.charAt(0).toLowerCase() + str.slice(1);
-    }
-  }]);
-}();
-/* harmony default export */ const utils_StringUtils = (StringUtils);
-;// CONCATENATED MODULE: ./src/components/Plugin.js
-function Plugin_typeof(o) { "@babel/helpers - typeof"; return Plugin_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Plugin_typeof(o); }
-function Plugin_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function Plugin_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Plugin_toPropertyKey(descriptor.key), descriptor); } }
-function Plugin_createClass(Constructor, protoProps, staticProps) { if (protoProps) Plugin_defineProperties(Constructor.prototype, protoProps); if (staticProps) Plugin_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _defineProperty(obj, key, value) { key = Plugin_toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function Plugin_toPropertyKey(t) { var i = Plugin_toPrimitive(t, "string"); return "symbol" == Plugin_typeof(i) ? i : i + ""; }
-function Plugin_toPrimitive(t, r) { if ("object" != Plugin_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != Plugin_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-
-
-var Plugin = /*#__PURE__*/function () {
-  function Plugin(el) {
-    Plugin_classCallCheck(this, Plugin);
-    this.id = uniqueId_default()("c");
-    this.name = utils_StringUtils.pascalToCamel(this.constructor.name);
-    this.container = el;
-    this.attributes = this.container.dataset;
-    this.container.dataset[this.name] = this.id;
-    Plugin.instances.push(this);
-  }
-  return Plugin_createClass(Plugin, [{
-    key: "getAttr",
-    value: function getAttr(key) {
-      return this.container.dataset[key];
-    }
-  }, {
-    key: "setAttr",
-    value: function setAttr(key, value) {
-      this.container.dataset[key] = value;
-    }
-  }, {
-    key: "destroy",
-    value: function destroy() {
-      delete this;
-    }
-  }], [{
-    key: "get",
-    value: function get(name) {
-      return Plugin.instances.filter(function (x) {
-        return x.name == name;
-      });
-    }
-  }]);
-}();
-_defineProperty(Plugin, "instances", []);
-/* harmony default export */ const components_Plugin = (Plugin);
-;// CONCATENATED MODULE: ./src/components/Button/Button.js
-function Button_typeof(o) { "@babel/helpers - typeof"; return Button_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Button_typeof(o); }
-function Button_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function Button_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Button_toPropertyKey(descriptor.key), descriptor); } }
-function Button_createClass(Constructor, protoProps, staticProps) { if (protoProps) Button_defineProperties(Constructor.prototype, protoProps); if (staticProps) Button_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function Button_toPropertyKey(t) { var i = Button_toPrimitive(t, "string"); return "symbol" == Button_typeof(i) ? i : i + ""; }
-function Button_toPrimitive(t, r) { if ("object" != Button_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != Button_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
-function _possibleConstructorReturn(self, call) { if (call && (Button_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-var Button = /*#__PURE__*/function (_Plugin) {
-  function Button(el) {
-    var _this;
-    Button_classCallCheck(this, Button);
-    _this = _callSuper(this, Button, [el]);
-    _this.isHovering = false;
-    _this.initListeners();
-    return _this;
-  }
-  _inherits(Button, _Plugin);
-  return Button_createClass(Button, [{
-    key: "handleMouseEnter",
-    value: function handleMouseEnter(e) {
-      var _this$callbacks, _this$callbacks$onMou;
-      this.isHovering = true;
-      (_this$callbacks = this.callbacks) === null || _this$callbacks === void 0 || (_this$callbacks$onMou = _this$callbacks.onMouseEnter) === null || _this$callbacks$onMou === void 0 || _this$callbacks$onMou.call(_this$callbacks, e.clientX, e.clientY);
-    }
-  }, {
-    key: "handleMouseLeave",
-    value: function handleMouseLeave() {
-      var _this$callbacks2, _this$callbacks2$onMo;
-      this.isHovering = false;
-      (_this$callbacks2 = this.callbacks) === null || _this$callbacks2 === void 0 || (_this$callbacks2$onMo = _this$callbacks2.onMouseLeave) === null || _this$callbacks2$onMo === void 0 || _this$callbacks2$onMo.call(_this$callbacks2, this.isHovering);
-    }
-  }, {
-    key: "handleMouseMove",
-    value: function handleMouseMove(e) {
-      var _this$callbacks3, _this$callbacks3$onMo;
-      (_this$callbacks3 = this.callbacks) === null || _this$callbacks3 === void 0 || (_this$callbacks3$onMo = _this$callbacks3.onMouseMove) === null || _this$callbacks3$onMo === void 0 || _this$callbacks3$onMo.call(_this$callbacks3, e.clientX, e.clientY);
-    }
-  }, {
-    key: "top",
-    value: function top() {
-      return this.container.getBoundingClientRect().top;
-    }
-  }, {
-    key: "left",
-    value: function left() {
-      return this.container.getBoundingClientRect.left;
-    }
-  }, {
-    key: "right",
-    value: function right() {
-      var rect = element.getBoundingClientRect();
-      var viewportWidth = window.innerWidth;
-      var distanceToRight = viewportWidth - rect.right;
-      return distanceToRight;
-    }
-  }, {
-    key: "bottom",
-    value: function bottom() {
-      return this.container.getBoundingClientRect().right;
-    }
-  }, {
-    key: "height",
-    value: function height() {
-      return this.container.getBoundingClientRect().height;
-    }
-  }, {
-    key: "width",
-    value: function width() {
-      return this.container.getBoundingClientRect().width;
-    }
-  }, {
-    key: "bounds",
-    value: function bounds() {
-      return this.container.getBoundingClientRect();
-    }
-  }, {
-    key: "initListeners",
-    value: function initListeners() {
-      var enterHandler = this.handleMouseEnter.bind(this);
-      var leaveHandler = this.handleMouseLeave.bind(this);
-      var moveHandler = this.handleMouseMove.bind(this);
-      this.container.addEventListener("mouseenter", enterHandler);
-      this.container.addEventListener("mouseleave", leaveHandler);
-      this.container.addEventListener("mousemove", moveHandler);
-    }
-  }, {
-    key: "setCallbacks",
-    value: function setCallbacks(obj) {
-      this.callbacks = obj;
-    }
-  }]);
-}(components_Plugin);
-/* harmony default export */ const Button_Button = (Button);
-;// CONCATENATED MODULE: ./src/lib/utils/Utils.js
-function Utils_typeof(o) { "@babel/helpers - typeof"; return Utils_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Utils_typeof(o); }
-function Utils_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function Utils_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Utils_toPropertyKey(descriptor.key), descriptor); } }
-function Utils_createClass(Constructor, protoProps, staticProps) { if (protoProps) Utils_defineProperties(Constructor.prototype, protoProps); if (staticProps) Utils_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function Utils_toPropertyKey(t) { var i = Utils_toPrimitive(t, "string"); return "symbol" == Utils_typeof(i) ? i : i + ""; }
-function Utils_toPrimitive(t, r) { if ("object" != Utils_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != Utils_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var Utils = /*#__PURE__*/function () {
-  function Utils() {
-    Utils_classCallCheck(this, Utils);
-  }
-  return Utils_createClass(Utils, null, [{
-    key: "midpoint",
-    value: function midpoint(x1, y1, x2, y2) {
-      return {
-        x: (x1 + x2) / 2,
-        y: (y1 + y2) / 2
-      };
-    }
-  }, {
-    key: "rgbToRgba",
-    value: function rgbToRgba() {}
-  }, {
-    key: "rgbToHex",
-    value: function rgbToHex(r, g, b) {
-      r = r.toString(16);
-      g = g.toString(16);
-      b = b.toString(16);
-      if (r.length == 1) r = "0" + r;
-      if (g.length == 1) g = "0" + g;
-      if (b.length == 1) b = "0" + b;
-      return "#" + r + g + b;
-    }
-  }, {
-    key: "hexToRgb",
-    value: function hexToRgb(hex) {
-      var r = parseInt(hex.substring(1, 3), 16);
-      var g = parseInt(hex.substring(3, 5), 16);
-      var b = parseInt(hex.substring(5, 7), 16);
-      return {
-        r: r,
-        g: g,
-        b: b
-      };
-    }
-  }, {
-    key: "hexToRgba",
-    value: function hexToRgba(hex, alpha) {
-      var r = parseInt(hex.substring(1, 3), 16);
-      var g = parseInt(hex.substring(3, 5), 16);
-      var b = parseInt(hex.substring(5, 7), 16);
-      return [r, g, b, alpha || 1.0];
-    }
-  }, {
-    key: "lightenHex",
-    value: function lightenHex(hex, amount) {
-      var _this$hexToRgb = this.hexToRgb(hex),
-        r = _this$hexToRgb.r,
-        g = _this$hexToRgb.g,
-        b = _this$hexToRgb.b;
-
-      // Ensure amount is not greater than 100
-      amount = amount > 100 ? 100 : amount;
-
-      // Calculate the adjustment value
-      var adjust = amount / 100 * 255;
-
-      // Adjust each color component
-      var r2 = Math.min(255, r + adjust);
-      var g2 = Math.min(255, g + adjust);
-      var b2 = Math.min(255, b + adjust);
-
-      // Convert back to hex and return
-      return "#" + [r2, g2, b2].map(function (x) {
-        var hex = Math.round(x).toString(16);
-        return hex.length === 1 ? "0" + hex : hex;
-      }).join("");
-    }
-  }, {
-    key: "getPixelColor",
-    value: function getPixelColor(img, x, y, format, opacity) {
-      var px = img.get(x, y);
-      var _final;
-      if (!Array.isArray(px)) return;
-      switch (format) {
-        case "rgb":
-          _final = "rgb(".concat([px[0]], ", ").concat(px[1], ", ").concat(px[2], ")");
-          break;
-        case "rgba":
-          _final = "rgba(".concat([px[0]], ", ").concat(px[1], ", ").concat(px[2], ", ").concat(opacity, ")");
-          break;
-        default:
-          _final = Utils.rgbToHex(px[0], px[1], px[2]);
-      }
-      return _final;
-    }
-  }, {
-    key: "getRandomJSONValue",
-    value: function getRandomJSONValue(json) {
-      // Check if the input is a string and parse it, otherwise use it directly
-      var obj = typeof json === "string" ? JSON.parse(json) : json;
-
-      // Extract the values from the object
-      var values = Object.values(obj);
-
-      // Generate a random index based on the number of values
-      var randomIndex = Math.floor(Math.random() * values.length);
-
-      // Return a random value
-      return values[randomIndex];
-    }
-  }, {
-    key: "drawPoint",
-    value: function drawPoint(x, y) {
-      stroke("black");
-      strokeWeight(50);
-      point(x, y);
-      noStroke();
-    }
-  }, {
-    key: "getRandomInt",
-    value: function getRandomInt(min, max) {
-      return Math.floor(Math.random() * (max - min)) + min;
-    }
-  }, {
-    key: "isTouchScreen",
-    value: function isTouchScreen() {
-      return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-    }
-  }]);
-}();
-/* harmony default export */ const utils_Utils = (Utils);
 ;// CONCATENATED MODULE: ./node_modules/gsap/gsap-core.js
-function gsap_core_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
@@ -2818,10 +2511,10 @@ var Timeline = /*#__PURE__*/function (_Animation) {
     _this.smoothChildTiming = !!vars.smoothChildTiming;
     _this.autoRemoveChildren = !!vars.autoRemoveChildren;
     _this._sort = _isNotFalse(vars.sortChildren);
-    _globalTimeline && _addToTimeline(vars.parent || _globalTimeline, gsap_core_assertThisInitialized(_this), position);
+    _globalTimeline && _addToTimeline(vars.parent || _globalTimeline, _assertThisInitialized(_this), position);
     vars.reversed && _this.reverse();
     vars.paused && _this.paused(true);
-    vars.scrollTrigger && _scrollTrigger(gsap_core_assertThisInitialized(_this), vars.scrollTrigger);
+    vars.scrollTrigger && _scrollTrigger(_assertThisInitialized(_this), vars.scrollTrigger);
     return _this;
   }
 
@@ -4004,7 +3697,7 @@ var Tween = /*#__PURE__*/function (_Animation2) {
       }); // we need to store the targets because for staggers and keyframes, we end up creating an individual tween for each but function-based values need to know the index and the whole Array of targets.
 
       tl.kill();
-      tl.parent = tl._dp = gsap_core_assertThisInitialized(_this3);
+      tl.parent = tl._dp = _assertThisInitialized(_this3);
       tl._start = 0;
 
       if (stagger || _isFuncOrString(duration) || _isFuncOrString(delay)) {
@@ -4028,8 +3721,8 @@ var Tween = /*#__PURE__*/function (_Animation2) {
           staggerVarsToMerge && _merge(copy, staggerVarsToMerge);
           curTarget = parsedTargets[i]; //don't just copy duration or delay because if they're a string or function, we'd end up in an infinite loop because _isFuncOrString() would evaluate as true in the child tweens, entering this loop, etc. So we parse the value straight from vars and default to 0.
 
-          copy.duration = +_parseFuncOrString(duration, gsap_core_assertThisInitialized(_this3), i, curTarget, parsedTargets);
-          copy.delay = (+_parseFuncOrString(delay, gsap_core_assertThisInitialized(_this3), i, curTarget, parsedTargets) || 0) - _this3._delay;
+          copy.duration = +_parseFuncOrString(duration, _assertThisInitialized(_this3), i, curTarget, parsedTargets);
+          copy.delay = (+_parseFuncOrString(delay, _assertThisInitialized(_this3), i, curTarget, parsedTargets) || 0) - _this3._delay;
 
           if (!stagger && l === 1 && copy.delay) {
             // if someone does delay:"random(1, 5)", repeat:-1, for example, the delay shouldn't be inside the repeat.
@@ -4096,26 +3789,26 @@ var Tween = /*#__PURE__*/function (_Animation2) {
     }
 
     if (overwrite === true && !_suppressOverwrites) {
-      _overwritingTween = gsap_core_assertThisInitialized(_this3);
+      _overwritingTween = _assertThisInitialized(_this3);
 
       _globalTimeline.killTweensOf(parsedTargets);
 
       _overwritingTween = 0;
     }
 
-    _addToTimeline(parent, gsap_core_assertThisInitialized(_this3), position);
+    _addToTimeline(parent, _assertThisInitialized(_this3), position);
 
     vars.reversed && _this3.reverse();
     vars.paused && _this3.paused(true);
 
-    if (immediateRender || !duration && !keyframes && _this3._start === _roundPrecise(parent._time) && _isNotFalse(immediateRender) && _hasNoPausedAncestors(gsap_core_assertThisInitialized(_this3)) && parent.data !== "nested") {
+    if (immediateRender || !duration && !keyframes && _this3._start === _roundPrecise(parent._time) && _isNotFalse(immediateRender) && _hasNoPausedAncestors(_assertThisInitialized(_this3)) && parent.data !== "nested") {
       _this3._tTime = -_tinyNum; //forces a render without having to set the render() "force" parameter to true because we want to allow lazying by default (using the "force" parameter always forces an immediate full render)
 
       _this3.render(Math.max(0, -delay) || 0); //in case delay is negative
 
     }
 
-    scrollTrigger && _scrollTrigger(gsap_core_assertThisInitialized(_this3), scrollTrigger);
+    scrollTrigger && _scrollTrigger(_assertThisInitialized(_this3), scrollTrigger);
     return _this3;
   }
 
@@ -6858,37 +6551,243 @@ var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap,
     // to protect from tree shaking
 TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
-;// CONCATENATED MODULE: ./src/components/MagneticButton/MagneticButton.js
+;// CONCATENATED MODULE: ./src/lib/utils/Utils.js
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+var Utils = /*#__PURE__*/function () {
+  function Utils() {
+    _classCallCheck(this, Utils);
+  }
+  return _createClass(Utils, null, [{
+    key: "midpoint",
+    value: function midpoint(x1, y1, x2, y2) {
+      return {
+        x: (x1 + x2) / 2,
+        y: (y1 + y2) / 2
+      };
+    }
+  }, {
+    key: "rgbToRgba",
+    value: function rgbToRgba() {}
+  }, {
+    key: "rgbToHex",
+    value: function rgbToHex(r, g, b) {
+      r = r.toString(16);
+      g = g.toString(16);
+      b = b.toString(16);
+      if (r.length == 1) r = "0" + r;
+      if (g.length == 1) g = "0" + g;
+      if (b.length == 1) b = "0" + b;
+      return "#" + r + g + b;
+    }
+  }, {
+    key: "hexToRgb",
+    value: function hexToRgb(hex) {
+      var r = parseInt(hex.substring(1, 3), 16);
+      var g = parseInt(hex.substring(3, 5), 16);
+      var b = parseInt(hex.substring(5, 7), 16);
+      return {
+        r: r,
+        g: g,
+        b: b
+      };
+    }
+  }, {
+    key: "hexToRgba",
+    value: function hexToRgba(hex, alpha) {
+      var r = parseInt(hex.substring(1, 3), 16);
+      var g = parseInt(hex.substring(3, 5), 16);
+      var b = parseInt(hex.substring(5, 7), 16);
+      return [r, g, b, alpha || 1.0];
+    }
+  }, {
+    key: "lightenHex",
+    value: function lightenHex(hex, amount) {
+      var _this$hexToRgb = this.hexToRgb(hex),
+        r = _this$hexToRgb.r,
+        g = _this$hexToRgb.g,
+        b = _this$hexToRgb.b;
+
+      // Ensure amount is not greater than 100
+      amount = amount > 100 ? 100 : amount;
+
+      // Calculate the adjustment value
+      var adjust = amount / 100 * 255;
+
+      // Adjust each color component
+      var r2 = Math.min(255, r + adjust);
+      var g2 = Math.min(255, g + adjust);
+      var b2 = Math.min(255, b + adjust);
+
+      // Convert back to hex and return
+      return "#" + [r2, g2, b2].map(function (x) {
+        var hex = Math.round(x).toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      }).join("");
+    }
+  }, {
+    key: "getPixelColor",
+    value: function getPixelColor(img, x, y, format, opacity) {
+      var px = img.get(x, y);
+      var _final;
+      if (!Array.isArray(px)) return;
+      switch (format) {
+        case "rgb":
+          _final = "rgb(".concat([px[0]], ", ").concat(px[1], ", ").concat(px[2], ")");
+          break;
+        case "rgba":
+          _final = "rgba(".concat([px[0]], ", ").concat(px[1], ", ").concat(px[2], ", ").concat(opacity, ")");
+          break;
+        default:
+          _final = Utils.rgbToHex(px[0], px[1], px[2]);
+      }
+      return _final;
+    }
+  }, {
+    key: "getRandomJSONValue",
+    value: function getRandomJSONValue(json) {
+      // Check if the input is a string and parse it, otherwise use it directly
+      var obj = typeof json === "string" ? JSON.parse(json) : json;
+
+      // Extract the values from the object
+      var values = Object.values(obj);
+
+      // Generate a random index based on the number of values
+      var randomIndex = Math.floor(Math.random() * values.length);
+
+      // Return a random value
+      return values[randomIndex];
+    }
+  }, {
+    key: "drawPoint",
+    value: function drawPoint(x, y) {
+      stroke("black");
+      strokeWeight(50);
+      point(x, y);
+      noStroke();
+    }
+  }, {
+    key: "getRandomInt",
+    value: function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+  }, {
+    key: "isTouchScreen",
+    value: function isTouchScreen() {
+      return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+    }
+  }]);
+}();
+/* harmony default export */ const utils_Utils = (Utils);
+// EXTERNAL MODULE: ./node_modules/lodash/uniqueId.js
+var uniqueId = __webpack_require__(200);
+var uniqueId_default = /*#__PURE__*/__webpack_require__.n(uniqueId);
+;// CONCATENATED MODULE: ./src/lib/utils/StringUtils.js
+function StringUtils_typeof(o) { "@babel/helpers - typeof"; return StringUtils_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, StringUtils_typeof(o); }
+function StringUtils_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function StringUtils_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, StringUtils_toPropertyKey(descriptor.key), descriptor); } }
+function StringUtils_createClass(Constructor, protoProps, staticProps) { if (protoProps) StringUtils_defineProperties(Constructor.prototype, protoProps); if (staticProps) StringUtils_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function StringUtils_toPropertyKey(t) { var i = StringUtils_toPrimitive(t, "string"); return "symbol" == StringUtils_typeof(i) ? i : i + ""; }
+function StringUtils_toPrimitive(t, r) { if ("object" != StringUtils_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != StringUtils_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+var StringUtils = /*#__PURE__*/function () {
+  function StringUtils() {
+    StringUtils_classCallCheck(this, StringUtils);
+  }
+  return StringUtils_createClass(StringUtils, null, [{
+    key: "pascalToKebab",
+    value: function pascalToKebab(inputString) {
+      return inputString.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+    }
+  }, {
+    key: "pascalToCamel",
+    value: function pascalToCamel(str) {
+      if (!str) return "";
+      return str.charAt(0).toLowerCase() + str.slice(1);
+    }
+  }]);
+}();
+/* harmony default export */ const utils_StringUtils = (StringUtils);
+;// CONCATENATED MODULE: ./src/plugins/_lib/Plugin.js
+function Plugin_typeof(o) { "@babel/helpers - typeof"; return Plugin_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Plugin_typeof(o); }
+function Plugin_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function Plugin_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Plugin_toPropertyKey(descriptor.key), descriptor); } }
+function Plugin_createClass(Constructor, protoProps, staticProps) { if (protoProps) Plugin_defineProperties(Constructor.prototype, protoProps); if (staticProps) Plugin_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _defineProperty(obj, key, value) { key = Plugin_toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function Plugin_toPropertyKey(t) { var i = Plugin_toPrimitive(t, "string"); return "symbol" == Plugin_typeof(i) ? i : i + ""; }
+function Plugin_toPrimitive(t, r) { if ("object" != Plugin_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != Plugin_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
+
+var Plugin = /*#__PURE__*/function () {
+  function Plugin(el) {
+    Plugin_classCallCheck(this, Plugin);
+    this.id = uniqueId_default()("p");
+    this.name = utils_StringUtils.pascalToCamel("Plugin" + this.constructor.name);
+    this.container = el;
+    this.attributes = this.container.dataset;
+    this.container.dataset[this.name] = this.id;
+    Plugin.instances.push(this);
+  }
+  return Plugin_createClass(Plugin, [{
+    key: "getAttr",
+    value: function getAttr(key) {
+      return this.container.dataset[key];
+    }
+  }, {
+    key: "setAttr",
+    value: function setAttr(key, value) {
+      this.container.dataset[key] = value;
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      delete this;
+    }
+  }], [{
+    key: "get",
+    value: function get(name) {
+      return Plugin.instances.filter(function (x) {
+        return x.name == name;
+      });
+    }
+  }]);
+}();
+_defineProperty(Plugin, "instances", []);
+/* harmony default export */ const _lib_Plugin = (Plugin);
+;// CONCATENATED MODULE: ./src/plugins/MagneticButton/components/MagneticButton.js
 function MagneticButton_typeof(o) { "@babel/helpers - typeof"; return MagneticButton_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, MagneticButton_typeof(o); }
 function MagneticButton_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function MagneticButton_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, MagneticButton_toPropertyKey(descriptor.key), descriptor); } }
 function MagneticButton_createClass(Constructor, protoProps, staticProps) { if (protoProps) MagneticButton_defineProperties(Constructor.prototype, protoProps); if (staticProps) MagneticButton_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function MagneticButton_toPropertyKey(t) { var i = MagneticButton_toPrimitive(t, "string"); return "symbol" == MagneticButton_typeof(i) ? i : i + ""; }
 function MagneticButton_toPrimitive(t, r) { if ("object" != MagneticButton_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != MagneticButton_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function MagneticButton_callSuper(t, o, e) { return o = MagneticButton_getPrototypeOf(o), MagneticButton_possibleConstructorReturn(t, MagneticButton_isNativeReflectConstruct() ? Reflect.construct(o, e || [], MagneticButton_getPrototypeOf(t).constructor) : o.apply(t, e)); }
-function MagneticButton_possibleConstructorReturn(self, call) { if (call && (MagneticButton_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return MagneticButton_assertThisInitialized(self); }
+function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
+function _possibleConstructorReturn(self, call) { if (call && (MagneticButton_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return MagneticButton_assertThisInitialized(self); }
 function MagneticButton_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function MagneticButton_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (MagneticButton_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
-function MagneticButton_getPrototypeOf(o) { MagneticButton_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return MagneticButton_getPrototypeOf(o); }
-function MagneticButton_inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) MagneticButton_setPrototypeOf(subClass, superClass); }
-function MagneticButton_setPrototypeOf(o, p) { MagneticButton_setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return MagneticButton_setPrototypeOf(o, p); }
+function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 
 
 
 // Source: https://codepen.io/tdesero/pen/RmoxQg
-var MagneticButton = /*#__PURE__*/function (_Button) {
+var MagneticButton = /*#__PURE__*/function (_Plugin) {
   function MagneticButton(el) {
     var _this;
     MagneticButton_classCallCheck(this, MagneticButton);
-    _this = MagneticButton_callSuper(this, MagneticButton, [el]);
+    _this = _callSuper(this, MagneticButton, [el]);
     _this.setAttr("strength", "100");
     if (!utils_Utils.isTouchScreen()) {
-      _this.initCallbacks();
+      _this.initListeners();
     }
     return _this;
   }
-  MagneticButton_inherits(MagneticButton, _Button);
+  _inherits(MagneticButton, _Plugin);
   return MagneticButton_createClass(MagneticButton, [{
     key: "move",
     value: function move(clientX, clientY) {
@@ -6907,9 +6806,6 @@ var MagneticButton = /*#__PURE__*/function (_Button) {
       });
     }
   }, {
-    key: "onMouseEnter",
-    value: function onMouseEnter() {}
-  }, {
     key: "onMouseLeave",
     value: function onMouseLeave() {
       gsapWithCSS.to(this.container, 1.5, {
@@ -6924,30 +6820,83 @@ var MagneticButton = /*#__PURE__*/function (_Button) {
       this.move(clientX, clientY);
     }
   }, {
-    key: "initCallbacks",
-    value: function initCallbacks() {
-      var obj = {
-        onMouseEnter: this.onMouseEnter.bind(this),
-        onMouseLeave: this.onMouseLeave.bind(this),
-        onMouseMove: this.onMouseMove.bind(this)
-      };
-      this.setCallbacks(obj);
+    key: "onMouseEnter",
+    value: function onMouseEnter() {}
+  }, {
+    key: "handleMouseEnter",
+    value: function handleMouseEnter(e) {
+      this.isHovering = true;
+      this.onMouseEnter();
+    }
+  }, {
+    key: "handleMouseLeave",
+    value: function handleMouseLeave() {
+      this.isHovering = false;
+      this.onMouseLeave();
+    }
+  }, {
+    key: "handleMouseMove",
+    value: function handleMouseMove(e) {
+      this.onMouseMove(e.clientX, e.clientY);
+    }
+  }, {
+    key: "top",
+    value: function top() {
+      return this.container.getBoundingClientRect().top;
+    }
+  }, {
+    key: "left",
+    value: function left() {
+      return this.container.getBoundingClientRect.left;
+    }
+  }, {
+    key: "right",
+    value: function right() {
+      var rect = element.getBoundingClientRect();
+      var viewportWidth = window.innerWidth;
+      var distanceToRight = viewportWidth - rect.right;
+      return distanceToRight;
+    }
+  }, {
+    key: "bottom",
+    value: function bottom() {
+      return this.container.getBoundingClientRect().right;
+    }
+  }, {
+    key: "height",
+    value: function height() {
+      return this.container.getBoundingClientRect().height;
+    }
+  }, {
+    key: "width",
+    value: function width() {
+      return this.container.getBoundingClientRect().width;
+    }
+  }, {
+    key: "bounds",
+    value: function bounds() {
+      return this.container.getBoundingClientRect();
+    }
+  }, {
+    key: "initListeners",
+    value: function initListeners() {
+      var enterHandler = this.handleMouseEnter.bind(this);
+      var leaveHandler = this.handleMouseLeave.bind(this);
+      var moveHandler = this.handleMouseMove.bind(this);
+      this.container.addEventListener("mouseenter", enterHandler);
+      this.container.addEventListener("mouseleave", leaveHandler);
+      this.container.addEventListener("mousemove", moveHandler);
     }
   }]);
-}(Button_Button);
-/* harmony default export */ const MagneticButton_MagneticButton = (MagneticButton);
-;// CONCATENATED MODULE: ./src/components/index.js
-
-
-
-
-;// CONCATENATED MODULE: ./src/plugins/MagneticButton.js
+}(_lib_Plugin);
+/* harmony default export */ const components_MagneticButton = (MagneticButton);
+;// CONCATENATED MODULE: ./src/plugins/MagneticButton/index.js
 
 var init = function init() {
   window.addEventListener("load", function () {
     var nodes = Array.from(document.querySelectorAll(".sqs-block-button"));
     nodes.forEach(function (node) {
-      new MagneticButton_MagneticButton(node);
+      new components_MagneticButton(node);
     });
   });
 };

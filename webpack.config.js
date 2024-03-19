@@ -5,17 +5,39 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
+const isDirectory = (source) => fs.lstatSync(source).isDirectory();
+const isNotUnderscored = (source) => !path.basename(source).startsWith("_");
+
 const generateEntryPoints = (srcDir) => {
   const entry = {};
-  // Read the source directory for JS files
-  fs.readdirSync(srcDir).forEach((file) => {
-    // Check if the file is a JavaScript file
-    if (path.extname(file) === ".js") {
-      // Remove the file extension to use as the bundle name
-      const basename = path.basename(file, ".js");
-      entry[basename] = path.resolve(srcDir, file);
-    }
-  });
+
+  const exploreDirectory = (dir, isRoot = true) => {
+    // Get all items in the current directory
+    fs.readdirSync(dir).forEach((item) => {
+      const fullPath = "./" + path.join(dir, item);
+      if (isDirectory(fullPath) && isRoot) {
+        if (isNotUnderscored(fullPath)) {
+          // If it's a valid directory and we are at the root, list its JS files but do not explore further
+          fs.readdirSync(fullPath).forEach((subItem) => {
+            const subFullPath = "./" + path.join(fullPath, subItem);
+            if (path.extname(subItem) === ".js") {
+              // If it's a JavaScript file, add it to the entry object
+              const dirname = path.basename(fullPath); // Use directory name
+              if (!entry[dirname]) {
+                entry[dirname] = subFullPath;
+              }
+            }
+          });
+        }
+      } else if (path.extname(item) === ".js" && isRoot) {
+        // If it's a JavaScript file at the root, add it to the entry object
+        const basename = path.basename(item, ".js");
+        entry[basename] = fullPath;
+      }
+    });
+  };
+
+  exploreDirectory(srcDir);
   return entry;
 };
 

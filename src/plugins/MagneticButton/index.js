@@ -1,4 +1,4 @@
-import { MagneticButton } from "../components";
+import MagneticButton from "./components/MagneticButton";
 
 const init = () => {
   window.addEventListener("load", () => {

@@ -1,12 +1,12 @@
 import uniqueId from "lodash/uniqueId";
-import StringUtils from "../lib/utils/StringUtils";
+import StringUtils from "../../lib/utils/StringUtils";
 
 class Plugin {
   static instances = [];
 
   constructor(el) {
-    this.id = uniqueId("c");
-    this.name = StringUtils.pascalToCamel(this.constructor.name);
+    this.id = uniqueId("p");
+    this.name = StringUtils.pascalToCamel("Plugin" + this.constructor.name);
     this.container = el;
     this.attributes = this.container.dataset;
 
@@ -21,7 +21,7 @@ class Plugin {
   getAttr(key) {
     return this.container.dataset[key];
   }
-  
+
   setAttr(key, value) {
     this.container.dataset[key] = value;
   }
