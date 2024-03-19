@@ -5,6 +5,7 @@ import StringUtils from "./StringUtils";
 class App {
   static modules = {};
   constructor() {
+    console.log('App loaded!');
     this.addAttributes();
     this.init();
   }

@@ -6963,13 +6963,14 @@ function App_toPrimitive(t, r) { if ("object" != App_typeof(t) || !t) return t; 
 var App = /*#__PURE__*/function () {
   function App() {
     App_classCallCheck(this, App);
+    console.log('App loaded!');
     this.addAttributes();
     this.init();
   }
   return App_createClass(App, [{
     key: "addAttributes",
     value: function addAttributes() {
-      var target = ".button-block.sqs-block-button";
+      var target = ".sqs-block-button";
       var buttons = Array.from(document.querySelectorAll(target));
       buttons.forEach(function (button) {
         button.dataset.moduleMagneticComponent = tools_Module.generateID();
