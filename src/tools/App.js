@@ -10,7 +10,7 @@ class App {
   }
 
   addAttributes() {
-    const target = ".button-block.sqs-block-button";
+    const target = ".sqs-block-button";
     const buttons = Array.from(document.querySelectorAll(target));
 
     buttons.forEach((button) => {

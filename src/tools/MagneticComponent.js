@@ -13,6 +13,7 @@ class MagneticComponent extends InteractiveComponent {
   }
 
   move(clientX, clientY) {
+    
     const button = this.container;
     const { left, top, width, height } = this.bounds();
     const strength = this.getAttr("strength");
