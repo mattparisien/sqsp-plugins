@@ -1,13 +1,29 @@
 const path = require("path");
+const fs = require("fs");
+
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
+const generateEntryPoints = (srcDir) => {
+  const entry = {};
+  // Read the source directory for JS files
+  fs.readdirSync(srcDir).forEach((file) => {
+    // Check if the file is a JavaScript file
+    if (path.extname(file) === ".js") {
+      // Remove the file extension to use as the bundle name
+      const basename = path.basename(file, ".js");
+      entry[basename] = path.resolve(srcDir, file);
+    }
+  });
+  return entry;
+};
+
 module.exports = {
   mode: "production",
-  entry: "./src/app.js",
+  entry: generateEntryPoints("./src/plugins"),
   output: {
-    filename: "bundle.js",
+    filename: "[name].bundle.js",
     clean: true,
     path: path.resolve(__dirname, "dist"),
     assetModuleFilename: "[name][ext]",
@@ -60,8 +76,6 @@ module.exports = {
     }),
   ],
   optimization: {
-    minimizer: [
-      new CssMinimizerPlugin(),
-    ],
+    minimizer: [new CssMinimizerPlugin()],
   },
 };

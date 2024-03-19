@@ -1,8 +1,8 @@
-import Module from "./Module";
+import Plugin from "../Plugin";
 
-class InteractiveComponent extends Module {
-  constructor(id) {
-    super(id);
+class Button extends Plugin {
+  constructor(el) {
+    super(el);
     this.isHovering = false;
     this.initListeners();
   }
@@ -70,4 +70,4 @@ class InteractiveComponent extends Module {
   }
 }
 
-export default InteractiveComponent;
+export default Button;

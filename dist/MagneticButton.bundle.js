@@ -479,7 +479,10 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-;// CONCATENATED MODULE: ./src/tools/StringUtils.js
+// EXTERNAL MODULE: ./node_modules/lodash/uniqueId.js
+var uniqueId = __webpack_require__(200);
+var uniqueId_default = /*#__PURE__*/__webpack_require__.n(uniqueId);
+;// CONCATENATED MODULE: ./src/lib/utils/StringUtils.js
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
@@ -503,47 +506,36 @@ var StringUtils = /*#__PURE__*/function () {
     }
   }]);
 }();
-/* harmony default export */ const tools_StringUtils = (StringUtils);
-// EXTERNAL MODULE: ./node_modules/lodash/uniqueId.js
-var uniqueId = __webpack_require__(200);
-var uniqueId_default = /*#__PURE__*/__webpack_require__.n(uniqueId);
-;// CONCATENATED MODULE: ./src/tools/Module.js
-function Module_typeof(o) { "@babel/helpers - typeof"; return Module_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Module_typeof(o); }
-function Module_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function Module_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Module_toPropertyKey(descriptor.key), descriptor); } }
-function Module_createClass(Constructor, protoProps, staticProps) { if (protoProps) Module_defineProperties(Constructor.prototype, protoProps); if (staticProps) Module_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _defineProperty(obj, key, value) { key = Module_toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function Module_toPropertyKey(t) { var i = Module_toPrimitive(t, "string"); return "symbol" == Module_typeof(i) ? i : i + ""; }
-function Module_toPrimitive(t, r) { if ("object" != Module_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != Module_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+/* harmony default export */ const utils_StringUtils = (StringUtils);
+;// CONCATENATED MODULE: ./src/components/Plugin.js
+function Plugin_typeof(o) { "@babel/helpers - typeof"; return Plugin_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Plugin_typeof(o); }
+function Plugin_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function Plugin_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Plugin_toPropertyKey(descriptor.key), descriptor); } }
+function Plugin_createClass(Constructor, protoProps, staticProps) { if (protoProps) Plugin_defineProperties(Constructor.prototype, protoProps); if (staticProps) Plugin_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _defineProperty(obj, key, value) { key = Plugin_toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function Plugin_toPropertyKey(t) { var i = Plugin_toPrimitive(t, "string"); return "symbol" == Plugin_typeof(i) ? i : i + ""; }
+function Plugin_toPrimitive(t, r) { if ("object" != Plugin_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != Plugin_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 
 
-var Module = /*#__PURE__*/function () {
-  function Module(id) {
-    Module_classCallCheck(this, Module);
-    this.id = id;
-    this.name = this.constructor.name;
-    this.container = document.querySelector("[data-module-".concat(tools_StringUtils.pascalToKebab(this.name), "=").concat(this.id, "]"));
-    console.log("[data-module-".concat(tools_StringUtils.pascalToKebab(this.name), "=").concat(this.id, "]"));
+var Plugin = /*#__PURE__*/function () {
+  function Plugin(el) {
+    Plugin_classCallCheck(this, Plugin);
+    this.id = uniqueId_default()("c");
+    this.name = utils_StringUtils.pascalToCamel(this.constructor.name);
+    this.container = el;
     this.attributes = this.container.dataset;
-
-    // this.setContainerId();
-    this.addToModules();
+    this.container.dataset[this.name] = this.id;
+    Plugin.instances.push(this);
   }
-  return Module_createClass(Module, [{
-    key: "addToModules",
-    value: function addToModules() {
-      Module.modules.push(this);
-    }
-  }, {
+  return Plugin_createClass(Plugin, [{
     key: "getAttr",
     value: function getAttr(key) {
-      var _this$attributes;
-      return (_this$attributes = this.attributes) === null || _this$attributes === void 0 ? void 0 : _this$attributes[key];
+      return this.container.dataset[key];
     }
   }, {
-    key: "setContainerId",
-    value: function setContainerId() {
-      // this.container.dataset[StringUtils.pascalToCamel(this.name)] = uniqueId("m");
+    key: "setAttr",
+    value: function setAttr(key, value) {
+      this.container.dataset[key] = value;
     }
   }, {
     key: "destroy",
@@ -553,46 +545,40 @@ var Module = /*#__PURE__*/function () {
   }], [{
     key: "get",
     value: function get(name) {
-      return Module.modules.filter(function (x) {
+      return Plugin.instances.filter(function (x) {
         return x.name == name;
       });
     }
-  }, {
-    key: "generateID",
-    value: function generateID() {
-      return uniqueId_default()("m");
-    }
   }]);
 }();
-_defineProperty(Module, "modules", []);
-_defineProperty(Module, "list", []);
-/* harmony default export */ const tools_Module = (Module);
-;// CONCATENATED MODULE: ./src/tools/InteractiveComponent.js
-function InteractiveComponent_typeof(o) { "@babel/helpers - typeof"; return InteractiveComponent_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, InteractiveComponent_typeof(o); }
-function InteractiveComponent_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function InteractiveComponent_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, InteractiveComponent_toPropertyKey(descriptor.key), descriptor); } }
-function InteractiveComponent_createClass(Constructor, protoProps, staticProps) { if (protoProps) InteractiveComponent_defineProperties(Constructor.prototype, protoProps); if (staticProps) InteractiveComponent_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function InteractiveComponent_toPropertyKey(t) { var i = InteractiveComponent_toPrimitive(t, "string"); return "symbol" == InteractiveComponent_typeof(i) ? i : i + ""; }
-function InteractiveComponent_toPrimitive(t, r) { if ("object" != InteractiveComponent_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != InteractiveComponent_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+_defineProperty(Plugin, "instances", []);
+/* harmony default export */ const components_Plugin = (Plugin);
+;// CONCATENATED MODULE: ./src/components/Button/Button.js
+function Button_typeof(o) { "@babel/helpers - typeof"; return Button_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Button_typeof(o); }
+function Button_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function Button_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Button_toPropertyKey(descriptor.key), descriptor); } }
+function Button_createClass(Constructor, protoProps, staticProps) { if (protoProps) Button_defineProperties(Constructor.prototype, protoProps); if (staticProps) Button_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function Button_toPropertyKey(t) { var i = Button_toPrimitive(t, "string"); return "symbol" == Button_typeof(i) ? i : i + ""; }
+function Button_toPrimitive(t, r) { if ("object" != Button_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != Button_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
-function _possibleConstructorReturn(self, call) { if (call && (InteractiveComponent_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (Button_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-var InteractiveComponent = /*#__PURE__*/function (_Module) {
-  function InteractiveComponent(id) {
+var Button = /*#__PURE__*/function (_Plugin) {
+  function Button(el) {
     var _this;
-    InteractiveComponent_classCallCheck(this, InteractiveComponent);
-    _this = _callSuper(this, InteractiveComponent, [id]);
+    Button_classCallCheck(this, Button);
+    _this = _callSuper(this, Button, [el]);
     _this.isHovering = false;
     _this.initListeners();
     return _this;
   }
-  _inherits(InteractiveComponent, _Module);
-  return InteractiveComponent_createClass(InteractiveComponent, [{
+  _inherits(Button, _Plugin);
+  return Button_createClass(Button, [{
     key: "handleMouseEnter",
     value: function handleMouseEnter(e) {
       var _this$callbacks, _this$callbacks$onMou;
@@ -666,9 +652,9 @@ var InteractiveComponent = /*#__PURE__*/function (_Module) {
       this.callbacks = obj;
     }
   }]);
-}(tools_Module);
-/* harmony default export */ const tools_InteractiveComponent = (InteractiveComponent);
-;// CONCATENATED MODULE: ./src/tools/Utils.js
+}(components_Plugin);
+/* harmony default export */ const Button_Button = (Button);
+;// CONCATENATED MODULE: ./src/lib/utils/Utils.js
 function Utils_typeof(o) { "@babel/helpers - typeof"; return Utils_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, Utils_typeof(o); }
 function Utils_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function Utils_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, Utils_toPropertyKey(descriptor.key), descriptor); } }
@@ -799,7 +785,7 @@ var Utils = /*#__PURE__*/function () {
     }
   }]);
 }();
-/* harmony default export */ const tools_Utils = (Utils);
+/* harmony default export */ const utils_Utils = (Utils);
 ;// CONCATENATED MODULE: ./node_modules/gsap/gsap-core.js
 function gsap_core_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -6872,37 +6858,38 @@ var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap,
     // to protect from tree shaking
 TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
-;// CONCATENATED MODULE: ./src/tools/MagneticComponent.js
-function MagneticComponent_typeof(o) { "@babel/helpers - typeof"; return MagneticComponent_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, MagneticComponent_typeof(o); }
-function MagneticComponent_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function MagneticComponent_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, MagneticComponent_toPropertyKey(descriptor.key), descriptor); } }
-function MagneticComponent_createClass(Constructor, protoProps, staticProps) { if (protoProps) MagneticComponent_defineProperties(Constructor.prototype, protoProps); if (staticProps) MagneticComponent_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function MagneticComponent_toPropertyKey(t) { var i = MagneticComponent_toPrimitive(t, "string"); return "symbol" == MagneticComponent_typeof(i) ? i : i + ""; }
-function MagneticComponent_toPrimitive(t, r) { if ("object" != MagneticComponent_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != MagneticComponent_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function MagneticComponent_callSuper(t, o, e) { return o = MagneticComponent_getPrototypeOf(o), MagneticComponent_possibleConstructorReturn(t, MagneticComponent_isNativeReflectConstruct() ? Reflect.construct(o, e || [], MagneticComponent_getPrototypeOf(t).constructor) : o.apply(t, e)); }
-function MagneticComponent_possibleConstructorReturn(self, call) { if (call && (MagneticComponent_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return MagneticComponent_assertThisInitialized(self); }
-function MagneticComponent_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function MagneticComponent_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (MagneticComponent_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
-function MagneticComponent_getPrototypeOf(o) { MagneticComponent_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return MagneticComponent_getPrototypeOf(o); }
-function MagneticComponent_inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) MagneticComponent_setPrototypeOf(subClass, superClass); }
-function MagneticComponent_setPrototypeOf(o, p) { MagneticComponent_setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return MagneticComponent_setPrototypeOf(o, p); }
+;// CONCATENATED MODULE: ./src/components/MagneticButton/MagneticButton.js
+function MagneticButton_typeof(o) { "@babel/helpers - typeof"; return MagneticButton_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, MagneticButton_typeof(o); }
+function MagneticButton_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function MagneticButton_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, MagneticButton_toPropertyKey(descriptor.key), descriptor); } }
+function MagneticButton_createClass(Constructor, protoProps, staticProps) { if (protoProps) MagneticButton_defineProperties(Constructor.prototype, protoProps); if (staticProps) MagneticButton_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function MagneticButton_toPropertyKey(t) { var i = MagneticButton_toPrimitive(t, "string"); return "symbol" == MagneticButton_typeof(i) ? i : i + ""; }
+function MagneticButton_toPrimitive(t, r) { if ("object" != MagneticButton_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != MagneticButton_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function MagneticButton_callSuper(t, o, e) { return o = MagneticButton_getPrototypeOf(o), MagneticButton_possibleConstructorReturn(t, MagneticButton_isNativeReflectConstruct() ? Reflect.construct(o, e || [], MagneticButton_getPrototypeOf(t).constructor) : o.apply(t, e)); }
+function MagneticButton_possibleConstructorReturn(self, call) { if (call && (MagneticButton_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return MagneticButton_assertThisInitialized(self); }
+function MagneticButton_assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function MagneticButton_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (MagneticButton_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
+function MagneticButton_getPrototypeOf(o) { MagneticButton_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return MagneticButton_getPrototypeOf(o); }
+function MagneticButton_inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) MagneticButton_setPrototypeOf(subClass, superClass); }
+function MagneticButton_setPrototypeOf(o, p) { MagneticButton_setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return MagneticButton_setPrototypeOf(o, p); }
 
 
 
 
 // Source: https://codepen.io/tdesero/pen/RmoxQg
-var MagneticComponent = /*#__PURE__*/function (_InteractiveComponent) {
-  function MagneticComponent(id) {
+var MagneticButton = /*#__PURE__*/function (_Button) {
+  function MagneticButton(el) {
     var _this;
-    MagneticComponent_classCallCheck(this, MagneticComponent);
-    _this = MagneticComponent_callSuper(this, MagneticComponent, [id]);
-    if (!tools_Utils.isTouchScreen()) {
+    MagneticButton_classCallCheck(this, MagneticButton);
+    _this = MagneticButton_callSuper(this, MagneticButton, [el]);
+    _this.setAttr("strength", "100");
+    if (!utils_Utils.isTouchScreen()) {
       _this.initCallbacks();
     }
     return _this;
   }
-  MagneticComponent_inherits(MagneticComponent, _InteractiveComponent);
-  return MagneticComponent_createClass(MagneticComponent, [{
+  MagneticButton_inherits(MagneticButton, _Button);
+  return MagneticButton_createClass(MagneticButton, [{
     key: "move",
     value: function move(clientX, clientY) {
       var button = this.container;
@@ -6947,65 +6934,21 @@ var MagneticComponent = /*#__PURE__*/function (_InteractiveComponent) {
       this.setCallbacks(obj);
     }
   }]);
-}(tools_InteractiveComponent);
-/* harmony default export */ const tools_MagneticComponent = (MagneticComponent);
-;// CONCATENATED MODULE: ./src/tools/App.js
-function App_typeof(o) { "@babel/helpers - typeof"; return App_typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, App_typeof(o); }
-function App_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function App_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, App_toPropertyKey(descriptor.key), descriptor); } }
-function App_createClass(Constructor, protoProps, staticProps) { if (protoProps) App_defineProperties(Constructor.prototype, protoProps); if (staticProps) App_defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function App_defineProperty(obj, key, value) { key = App_toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function App_toPropertyKey(t) { var i = App_toPrimitive(t, "string"); return "symbol" == App_typeof(i) ? i : i + ""; }
-function App_toPrimitive(t, r) { if ("object" != App_typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != App_typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+}(Button_Button);
+/* harmony default export */ const MagneticButton_MagneticButton = (MagneticButton);
+;// CONCATENATED MODULE: ./src/components/index.js
 
 
 
-var App = /*#__PURE__*/function () {
-  function App() {
-    App_classCallCheck(this, App);
-    console.log('App loaded!');
-    this.addAttributes();
-    this.init();
-  }
-  return App_createClass(App, [{
-    key: "addAttributes",
-    value: function addAttributes() {
-      var target = ".sqs-block-button";
-      var buttons = Array.from(document.querySelectorAll(target));
-      buttons.forEach(function (button) {
-        button.dataset.moduleMagneticComponent = tools_Module.generateID();
-        button.dataset.strength = 100;
-      });
-    }
-  }, {
-    key: "init",
-    value: function init() {
-      //Order of classes in this array matters
-      var modules = [tools_MagneticComponent];
-      modules.forEach(function (m) {
-        var name = m.name;
-        var attr = "[data-module-".concat(tools_StringUtils.pascalToKebab(name), "]");
-        var els = Array.from(document.querySelectorAll(attr));
-        if (els.length) {
-          els.forEach(function (el) {
-            var mod = modules.find(function (x) {
-              return x.name == m.name;
-            });
-            new mod(el.dataset.moduleMagneticComponent);
-          });
-        }
-      });
-    }
-  }]);
-}();
-App_defineProperty(App, "modules", {});
-/* harmony default export */ const tools_App = (App);
-;// CONCATENATED MODULE: ./src/app.js
 
+;// CONCATENATED MODULE: ./src/plugins/MagneticButton.js
 
 var init = function init() {
   window.addEventListener("load", function () {
-    return new tools_App();
+    var nodes = Array.from(document.querySelectorAll(".sqs-block-button"));
+    nodes.forEach(function (node) {
+      new MagneticButton_MagneticButton(node);
+    });
   });
 };
 init();
@@ -7013,4 +6956,4 @@ init();
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.js.map
+//# sourceMappingURL=MagneticButton.bundle.js.map

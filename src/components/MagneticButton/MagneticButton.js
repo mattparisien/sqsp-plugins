@@ -1,11 +1,13 @@
-import InteractiveComponent from "./InteractiveComponent";
-import Utils from "./Utils";
+import Button from "../Button/Button";
+import Utils from "../../lib/utils/Utils";
 import gsap from "gsap";
 
 // Source: https://codepen.io/tdesero/pen/RmoxQg
-class MagneticComponent extends InteractiveComponent {
-  constructor(id) {
-    super(id);
+class MagneticButton extends Button {
+  constructor(el) {
+    super(el);
+
+    this.setAttr("strength", "100");
 
     if (!Utils.isTouchScreen()) {
       this.initCallbacks();
@@ -13,7 +15,6 @@ class MagneticComponent extends InteractiveComponent {
   }
 
   move(clientX, clientY) {
-    
     const button = this.container;
     const { left, top, width, height } = this.bounds();
     const strength = this.getAttr("strength");
@@ -51,4 +52,4 @@ class MagneticComponent extends InteractiveComponent {
   }
 }
 
-export default MagneticComponent;
+export default MagneticButton;
