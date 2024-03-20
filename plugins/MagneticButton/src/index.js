@@ -6,6 +6,7 @@ const init = () => {
   window.addEventListener("load", () => {
     const nodes = Array.from(document.querySelectorAll(".sqs-block-button"));
     nodes.forEach((node) => {
+      console.log('Hello!');
       new MagneticButton(node); 
     });
   });
