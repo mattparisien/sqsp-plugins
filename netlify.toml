@@ -1,0 +1,2 @@
+[build]
+  ignore = "bash ./scripts/should-build.sh"
