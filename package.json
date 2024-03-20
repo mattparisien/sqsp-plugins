@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/mattparisien/sqsp-plugins#readme",
   "dependencies": {
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "lodash": "^4.17.21"
   }
 }
