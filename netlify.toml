@@ -1,2 +1,6 @@
 [build]
-  ignore = "bash ./scripts/should-build.sh"
+command = "node scripts/build-plugins.js"
+publish = "path/to/publish/directory"
+
+[context.production.environment]
+PLUGIN_NAME = ""
