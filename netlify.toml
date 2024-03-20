@@ -1,6 +1,3 @@
 [build]
 command = "node scripts/build-plugins.js"
-publish = "path/to/publish/directory"
-
-[context.production.environment]
-PLUGIN_NAME = ""
+publish = "/dist
