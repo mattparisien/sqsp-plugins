@@ -1,6 +1,6 @@
 import gsap from "gsap";
-import Utils from "../../../common/utils/Utils";
-import Plugin from "../../../common/utils/Plugin";
+import Utils from "../../_lib/utils/Utils";
+import Plugin from "../../_lib/utils/Plugin";
 
 // Source: https://codepen.io/tdesero/pen/RmoxQg
 class MagneticButton extends Plugin {

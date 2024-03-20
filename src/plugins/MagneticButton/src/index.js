@@ -1,5 +1,5 @@
 import MagneticButton from "./MagneticButton";
-import "../../../common/styles/reset.css";
+import "../../_lib/styles/reset.css";
 import "./assets/styles/main.css";
 
 const init = () => {

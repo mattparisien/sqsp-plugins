@@ -1,12 +1,18 @@
+/**
+ * @summary This file builds selected or all subfolders in the src/plugins directory to the target dist/plugins directory
+ * @example npm run build-plugins MagneticButton
+ */
+
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 require("dotenv").config();
 
-const rootDir         = path.join(__dirname, "../");
-const pluginsDir      = path.join(rootDir, "plugins");
-const distDir         = path.join(rootDir, "dist", "plugins");
-const specificPlugins = process.env.BUILD_PLUGINS;
+const rootDir = path.join(__dirname, "../");
+const pluginsDir = path.join(rootDir, "src/plugins");
+const distDir = path.join(rootDir, "dist", "plugins");
+// Grab command-line arguments starting from the third element
+const specificPlugins = process.argv.slice(2);
 
 const buildPlugin = (pluginName) => {
   const pluginPath = path.join(pluginsDir, pluginName);
@@ -16,7 +22,7 @@ const buildPlugin = (pluginName) => {
   try {
     // Execute the build script for the plugin
     execSync(
-      `npm install && npm run build -- --output-path ${pluginDistPath}`,
+      `npm run build -- --env pluginName=${pluginName} --env outputPath=${pluginDistPath}`,
       { cwd: pluginPath, stdio: "inherit" }
     );
     console.log(`Successfully built plugin: ${pluginName}`);
@@ -26,9 +32,9 @@ const buildPlugin = (pluginName) => {
   }
 };
 
-if (specificPlugins) {
-  // Build only the specific plugin if its directory exists
-  specificPlugins.split(",").forEach((plugin) => {
+if (specificPlugins.length > 0) {
+  // Build only the specified plugins if their directories exist
+  specificPlugins.forEach((plugin) => {
     if (fs.existsSync(path.join(pluginsDir, plugin))) {
       buildPlugin(plugin);
     } else {
@@ -36,9 +42,9 @@ if (specificPlugins) {
     }
   });
 } else {
-  // Build all plugins if no specific plugin name is provided
+  // If no plugin names are provided through the command line, build all plugins excluding those that start with '_'
   fs.readdirSync(pluginsDir, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
+    .filter((dirent) => dirent.isDirectory() && !dirent.name.startsWith('_'))
     .forEach((dirent) => {
       buildPlugin(dirent.name);
     });
