@@ -11,5 +11,4 @@ const init = () => {
   });
 };
 
-console.log('Before init!')
 init();

@@ -15,17 +15,6 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     assetModuleFilename: "[name][ext]",
   },
-  devtool: "source-map",
-  devServer: {
-    static: {
-      directory: path.resolve(__dirname, "dist"),
-    },
-    port: 3000,
-    open: true,
-    hot: true,
-    compress: true,
-    historyApiFallback: true,
-  },
   module: {
     rules: [
       {
@@ -67,9 +56,6 @@ module.exports = {
     }),
   ],
   optimization: {
-    splitChunks: {
-      chunks: 'all',
-    },
     minimizer: [new CssMinimizerPlugin()],
   },
 };
