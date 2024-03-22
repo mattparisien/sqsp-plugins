@@ -1,19 +1,13 @@
 import { IPlugin } from "../interfaces";
 
 abstract class PluginBase implements IPlugin {
-  readonly name: string;
+  element: HTMLElement;
 
-  constructor(name: string) {
-    this.name = name;
+  constructor(element: HTMLElement) {
+    this.element = element;
   }
 
-  initialize(): void {
-    console.log(`${this.name} initialized`);
-  }
-
-  destroy(): void {
-    console.log(`${this.name} destroyed`);
-  }
+  destroy(): void {}
 }
 
 export default PluginBase;

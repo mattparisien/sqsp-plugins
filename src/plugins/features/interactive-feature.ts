@@ -3,12 +3,19 @@ import { IInteractiveFeature } from "../interfaces";
 function InteractiveFeature<T extends new (...args: any[]) => {}>(Base: T) {
   return class extends Base implements IInteractiveFeature {
     element: HTMLElement;
+    clientX: number;
+    clientY: number;
 
     constructor(...args: any[]) {
       super(...args);
-      // Assume the element to attach listeners to is passed or defined in some way
-      this.element = document.createElement("div");
-      
+
+      this.element = args[0];
+
+      // Ensure the element is indeed an HTMLElement
+      if (!(this.element instanceof HTMLElement)) {
+        throw new Error("First argument must be an HTMLElement");
+      }
+
       // Bind event handlers to ensure 'this' context is preserved when called as event listeners
       this.onMouseEnter = this.onMouseEnter.bind(this);
       this.onMouseLeave = this.onMouseLeave.bind(this);
@@ -30,15 +37,14 @@ function InteractiveFeature<T extends new (...args: any[]) => {}>(Base: T) {
     }
 
     onMouseEnter(event: MouseEvent): void {
-      console.log("Mouse entered", event);
     }
 
     onMouseLeave(event: MouseEvent): void {
-      console.log("Mouse left", event);
     }
-    
+
     onMouseMove(event: MouseEvent): void {
-      console.log("Mouse moving", event);
+      this.clientX = event.clientX;
+      this.clientY = event.clientY;
     }
 
     // Ensure to call removeEventListeners when the plugin or feature is destroyed

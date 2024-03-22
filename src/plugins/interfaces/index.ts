@@ -1,16 +1,18 @@
 export interface IPlugin {
-    readonly name: string;
-    initialize(): void;
-    destroy(): void;
-  }
   
-  export interface IInteractiveFeature {
-    addEventListeners(): void;
-    removeEventListeners(): void;
-  }
-  
-  export interface IMagneticFeature {
-    magneticStrength: number;
-    adjustMagneticStrength(strength: number): void;
-  }
-  
+  // destroy(): void;
+}
+
+export interface IInteractiveFeature {
+  clientX: number;
+  clientY: number;
+  addEventListeners(): void;
+  removeEventListeners(): void;
+}
+
+export interface IMagneticFeature {
+  magneticStrength: number;
+  setMagneticStrength(strength: number): void;
+  applyMagneticEffect(el: HTMLElement, clientX: number, clientY: number): void;
+  removeMagneticEffect(el: HTMLElement): void;
+}
