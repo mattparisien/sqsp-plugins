@@ -1,15 +1,21 @@
 import { Constructor } from "../ts/types";
 
-interface ICanvas {}
+interface ICanvas {
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+}
 
 function CanvasMixin<T extends Constructor>(Base: T) {
   return class extends Base implements ICanvas {
-    canvas: HTMLElement;
+    canvas  = null;
+    context = null;
 
     constructor(...args: any[]) {
       const element = args[0];
       super(element as HTMLElement);
-      this.canvas = element;
+      
+      this.canvas  = element;
+      this.context = this.canvas.getContext("2d");
     }
   };
 }

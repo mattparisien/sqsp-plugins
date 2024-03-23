@@ -1,9 +1,9 @@
 [data-candlelight-mouse-follower-plugin] {
-  position: absolute;
-  left: 0;
+  position: fixed;
   top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
-  pointer-events: none;
   z-index: 999;
+  pointer-events: none;
 }

@@ -7,17 +7,18 @@ interface IInteractive {
   removeEventListeners(): void;
 }
 
-function InteractiveMixin<T extends Constructor>(Base: T) {
+function InteractiveMixin<T extends Constructor>(Base: T, useWindow = false) {
   return class extends Base implements IInteractive {
-    clientX: number;
-    clientY: number;
-    element: HTMLElement;
+    clientX = 0;
+    clientY = 0;
+    element = null;
 
     constructor(...args: any[]) {
       const element = args[0];
-      const config  = args[1];
+      const config = args[1];
       super(element as HTMLElement, config);
-      this.element = element;
+
+      this.element = useWindow ? window : element;
 
       // Bind event handlers to ensure 'this' context is preserved when called as event listeners
       this.onMouseEnter = this.onMouseEnter.bind(this);
