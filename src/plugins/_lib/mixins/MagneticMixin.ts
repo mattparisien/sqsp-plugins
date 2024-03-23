@@ -1,12 +1,21 @@
-import { IMagneticFeature } from "../interfaces";
+import { Constructor } from "../ts/types";
 import gsap from "gsap";
 
-type Constructor<T = {}> = new (...args: any[]) => T;
-type AbstractConstructor<T = {}> = Function & { prototype: T };
+interface IMagnetic {
+  magneticStrength: number;
+  setMagneticStrength(strength: number): void;
+  applyMagneticEffect(el: HTMLElement, clientX: number, clientY: number): void;
+  removeMagneticEffect(el: HTMLElement): void;
+}
 
-function MagneticFeature<T extends Constructor | AbstractConstructor>(Base: T) {
-  return class extends (Base as Constructor) implements IMagneticFeature {
+function MagneticMixin<T extends Constructor>(Base: T) {
+  return class extends Base implements IMagnetic {
     magneticStrength: number = 100;
+
+    constructor(...args: any[]) {
+      const element = args[0];
+      super(element);
+    }
 
     setMagneticStrength(strength: number): void {
       this.magneticStrength = strength;
@@ -34,4 +43,4 @@ function MagneticFeature<T extends Constructor | AbstractConstructor>(Base: T) {
   };
 }
 
-export default MagneticFeature;
+export default MagneticMixin;

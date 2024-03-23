@@ -1,15 +1,21 @@
-import { IInteractiveFeature } from "../interfaces";
+import { Constructor } from "../ts/types";
 
-function InteractiveFeature<T extends new (...args: any[]) => {}>(Base: T) {
-  return class extends Base implements IInteractiveFeature {
+interface IInteractive {
+  clientX: number;
+  clientY: number;
+  addEventListeners(): void;
+  removeEventListeners(): void;
+}
+
+function InteractiveMixin<T extends Constructor>(Base: T) {
+  return class extends Base implements IInteractive {
     element: HTMLElement;
     clientX: number;
     clientY: number;
 
     constructor(...args: any[]) {
-      super(...args);
-
-      this.element = args[0];
+      const element = args[0];
+      super(element);
 
       // Ensure the element is indeed an HTMLElement
       if (!(this.element instanceof HTMLElement)) {
@@ -36,11 +42,9 @@ function InteractiveFeature<T extends new (...args: any[]) => {}>(Base: T) {
       this.element.removeEventListener("mousemove", this.onMouseMove);
     }
 
-    onMouseEnter(event: MouseEvent): void {
-    }
+    onMouseEnter(event: MouseEvent): void {}
 
-    onMouseLeave(event: MouseEvent): void {
-    }
+    onMouseLeave(event: MouseEvent): void {}
 
     onMouseMove(event: MouseEvent): void {
       this.clientX = event.clientX;
@@ -55,4 +59,4 @@ function InteractiveFeature<T extends new (...args: any[]) => {}>(Base: T) {
   };
 }
 
-export default InteractiveFeature;
+export default InteractiveMixin;
