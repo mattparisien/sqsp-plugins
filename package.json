@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "create-plugin": "node scripts/create-plugin.js",
+    "create-plugin": "node scripts/createPlugin.js",
+    "create-plugin-mixin": "node scripts/createPluginMixin.js",
     "build-plugins": "node scripts/build-plugins.js",
     "dev": "webpack serve"
   },
@@ -23,6 +24,8 @@
     "glob": "^10.3.10",
     "gsap": "^3.12.5",
     "html-webpack-plugin": "^5.6.0",
+    "jss": "^10.10.0",
+    "jss-preset-default": "^10.10.0",
     "lodash": "^4.17.21",
     "sass": "^1.72.0",
     "sass-loader": "^14.1.1",

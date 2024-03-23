@@ -1,22 +1,74 @@
-// Import the PluginBase class
-import { PLUGIN_CONFIG, PLUGIN_MODULE_MAPPING } from "../constants/index";
-import { PluginConfiguration } from "../ts/types";
+import { PLUGIN_CONFIGURATION } from "../config/plugins";
+import {
+  PluginConfiguration,
+  PluginConfigurationContainer,
+  ElementContainerCreator,
+} from "../ts/types";
+import MODULE_MAPPING from "../config/moduleMapping";
+import { Classes } from "jss";
 
-async function getPluginClass(className) {
-  const importer = PLUGIN_MODULE_MAPPING[className];
+async function getPluginClass(className: string): Promise<any> {
+  const importer = MODULE_MAPPING[className];
   if (!importer) {
-    return console.error(`Unknown class name: ${className}`);
+    console.error(`Unknown class name: ${className}`);
+    return undefined;
   }
   const ClassModule = await importer();
   return ClassModule.default;
 }
 
-async function getPluginConfig(
-  pluginName: string
-): Promise<PluginConfiguration> {
-  // Dynamically import the JSON configuration based on the class name
-  const configObj = PLUGIN_CONFIG.find((x) => x.name === pluginName);
-  return configObj;
+function getPluginConfig(pluginName: string): PluginConfiguration {
+  return PLUGIN_CONFIGURATION.find((config) => config.name === pluginName);
+}
+
+function getPluginContainers(
+  container: PluginConfigurationContainer
+): HTMLElement | HTMLElement[] {
+  let ret: HTMLElement | HTMLElement[];
+
+  if (!container) {
+    throw new Error("Plugin container cannot be null or undefined");
+  }
+
+  if (typeof container === "string") {
+    ret = Array.from(document.querySelectorAll(container as string));
+  } else if (typeof container === "object") {
+    const el = document.createElement(
+      (container as ElementContainerCreator)["element"]
+    );
+    const parent = document.querySelector(
+      (container as ElementContainerCreator)["appendTo"]
+    );
+
+    if (!parent) {
+      throw new Error(
+        "Must pass a valid parent container selector for dynamically created containers"
+      );
+    }
+
+    if (
+      Object.values((container as ElementContainerCreator).attributes)?.length >
+      0
+    ) {
+      Object.entries((container as ElementContainerCreator).attributes).forEach(
+        (entry) => {
+          if (typeof entry[1] !== "object") {
+            el[entry[0]] = entry[1];
+          } else {
+            Object.entries(entry[1]).forEach((entry2) => {
+              el[entry[0]][entry2[0]] = true;
+            });
+          }
+        }
+      );
+    }
+
+    parent.appendChild(el);
+    ret = el;
+  } else {
+    throw new Error("Unidentifiable plugin container type");
+  }
+  return ret;
 }
 
 export async function initializePlugin(pluginName: string): Promise<void> {
@@ -24,18 +76,26 @@ export async function initializePlugin(pluginName: string): Promise<void> {
     const Class = await getPluginClass(pluginName);
     const config = await getPluginConfig(pluginName);
 
-    if (!Class) {
+    if (!Class || !config) {
       return console.error(
-        `Unable to load class. Plugin ${pluginName} not found.`
+        `Unable to load class or config. Plugin ${pluginName} not found.`
       );
     }
 
-    const elements = Array.from(document.querySelectorAll(config.selector));
+    const containers = getPluginContainers(config.container);
 
-    if (Object.values(elements)?.length > 0) {
-      elements.forEach((element) => {
-        new Class(element as HTMLElement, config);
+    if (!containers) {
+      return console.error(
+        `Unable to extract HTML container(s) for plugin ${pluginName}`
+      );
+    }
+
+    if (Array.isArray(containers) && containers.length > 0) {
+      containers.forEach((container) => {
+        new Class(container, config);
       });
+    } else {
+      new Class(containers as HTMLElement, config);
     }
   });
 }

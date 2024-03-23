@@ -3,21 +3,18 @@ import { PluginConfiguration } from "../_lib/ts/types";
 import PluginBase from "../_PluginBase/model";
 
 class MagneticButton extends InteractiveMixin(MagneticMixin(PluginBase)) {
-  constructor(element: HTMLElement, config: PluginConfiguration) {
-    super(element);
-    
-    this.setPluginConfig(config);
-    this.setPluginAttributes(this.name);
+  constructor(container: any, config: PluginConfiguration) {
+    super(container, config);
   }
 
   onMouseMove(event: MouseEvent): void {
     super.onMouseMove(event);
-    this.applyMagneticEffect(this.element, this.clientX, this.clientY);
+    this.applyMagneticEffect(this.container, this.clientX, this.clientY);
   }
 
   onMouseLeave(event: MouseEvent): void {
     super.onMouseLeave(event);
-    this.removeMagneticEffect(this.element);
+    this.removeMagneticEffect(this.container);
   }
 }
 

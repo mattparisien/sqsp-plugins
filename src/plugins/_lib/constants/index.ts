@@ -7,14 +7,6 @@ export const COMPANY_NAME_LOWER = COMPANY_NAME.toLocaleLowerCase();
 export const PLUGIN_SELECTOR_MAPPING = new Map();
 PLUGIN_SELECTOR_MAPPING.set("MagneticButton", ".sqs-button-block");
 
-export const PLUGIN_CONFIG: PluginConfiguration[] = [
-  {
-    name: "MagneticButton",
-    displayName: "Magnetic Button",
-    selector: ".sqs-button-block",
-  },
-];
-
 export const PLUGIN_MODULE_MAPPING = {
   MagneticButton: () => import("../../MagneticButton/model"),
 };

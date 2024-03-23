@@ -9,18 +9,15 @@ interface IInteractive {
 
 function InteractiveMixin<T extends Constructor>(Base: T) {
   return class extends Base implements IInteractive {
-    element: HTMLElement;
     clientX: number;
     clientY: number;
+    element: HTMLElement;
 
     constructor(...args: any[]) {
       const element = args[0];
-      super(element);
-
-      // Ensure the element is indeed an HTMLElement
-      if (!(this.element instanceof HTMLElement)) {
-        throw new Error("First argument must be an HTMLElement");
-      }
+      const config  = args[1];
+      super(element as HTMLElement, config);
+      this.element = element;
 
       // Bind event handlers to ensure 'this' context is preserved when called as event listeners
       this.onMouseEnter = this.onMouseEnter.bind(this);
@@ -54,7 +51,6 @@ function InteractiveMixin<T extends Constructor>(Base: T) {
     // Ensure to call removeEventListeners when the plugin or feature is destroyed
     destroy(): void {
       this.removeEventListeners();
-      console.log("Interactive feature destroyed and listeners removed.");
     }
   };
 }

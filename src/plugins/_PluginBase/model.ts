@@ -1,43 +1,33 @@
-import { COMPANY_NAME_LOWER } from "../_lib/constants";
-import { uniqueId } from "lodash";
 import { PluginConfiguration } from "../_lib/ts/types";
 
-export interface IPluginBaseConstructor {
-  new (element: HTMLElement): PluginBase;
+interface IPluginBase {
+  name: string;
+  displayName: string;
+  description: string;
+  container: HTMLElement;
+  setName(name: string): void;
 }
 
-class PluginBase {
-  protected element     : HTMLElement;
+class PluginBase implements IPluginBase {
+  name: string;
+  displayName: string;
+  description: string;
+  container: HTMLElement;
 
-  protected name        : string;
-  protected displayName : string;
-  protected selector    : string;
-  protected description : string;
+  constructor(container?: HTMLElement, configuration?: PluginConfiguration) {
+    if (container) {
+      this.container = container;
+    }
 
-  constructor(element: HTMLElement) {
-    this.setElement(element);
+    if (configuration && Object.values(configuration)?.length) {
+      this.name = configuration?.name;
+      this.displayName = configuration?.displayName;
+      this.description = configuration?.description;
+    }
   }
 
-  protected setName(name: string): void {
+  setName(name: string): void {
     this.name = name;
-  }
-
-  protected setElement(el: HTMLElement): void {
-    this.element = el;
-  }
-
-  protected setPluginAttributes(name: string): void {
-    this.element.dataset[COMPANY_NAME_LOWER + "Plugin"] = "true";
-    this.element.dataset[
-      COMPANY_NAME_LOWER + name.split(" ").join("") + "Plugin"
-    ] = uniqueId("p");
-  }
-
-  protected setPluginConfig(config: PluginConfiguration) {
-    this.name        = config.name;
-    this.displayName = config.displayName;
-    this.selector    = config.selector;
-    this.description = config.description;
   }
 }
 

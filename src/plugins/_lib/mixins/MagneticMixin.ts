@@ -14,7 +14,8 @@ function MagneticMixin<T extends Constructor>(Base: T) {
 
     constructor(...args: any[]) {
       const element = args[0];
-      super(element);
+      const config  = args[1];
+      super(element as HTMLElement, config);
     }
 
     setMagneticStrength(strength: number): void {
