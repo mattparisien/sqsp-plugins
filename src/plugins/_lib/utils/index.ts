@@ -1,11 +1,9 @@
+import MODULE_MAPPING from "../config/moduleMapping";
 import { PLUGIN_CONFIGURATION } from "../config/plugins";
 import {
-  PluginConfiguration,
-  PluginConfigurationContainer,
-  ElementContainerCreator,
+  ElementContainerCreator, PluginConfiguration,
+  PluginConfigurationContainer
 } from "../ts/types";
-import MODULE_MAPPING from "../config/moduleMapping";
-import { Classes } from "jss";
 
 async function getPluginClass(className: string): Promise<any> {
   const importer = MODULE_MAPPING[className];

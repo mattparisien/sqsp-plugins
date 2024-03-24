@@ -1,6 +1,8 @@
 import CanvasMixin from "./CanvasMixin";
 import AnimationFrameMixin from "./AnimationFrameMixin";
-import InteractiveMixin from "./InteractiveMixin";
+import MouseEventsMixin
+ from "./MouseEventsMixin";
 import MagneticMixin from "./MagneticMixin";
 
-export { InteractiveMixin, MagneticMixin, AnimationFrameMixin, CanvasMixin };
+export { MouseEventsMixin
+    , MagneticMixin, AnimationFrameMixin, CanvasMixin };

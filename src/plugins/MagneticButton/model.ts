@@ -1,8 +1,8 @@
-import { MagneticMixin, InteractiveMixin } from "../_lib/mixins";
+import { MagneticMixin, MouseEventsMixin } from "../_lib/mixins";
 import { PluginConfiguration } from "../_lib/ts/types";
 import PluginBase from "../_PluginBase/model";
 
-class MagneticButton extends InteractiveMixin(MagneticMixin(PluginBase)) {
+class MagneticButton extends MouseEventsMixin(MagneticMixin(PluginBase)) {
   constructor(container: any, config: PluginConfiguration) {
     super(container, config);
   }

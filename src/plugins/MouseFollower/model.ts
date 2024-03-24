@@ -1,30 +1,45 @@
 import {
   CanvasMixin,
   AnimationFrameMixin,
-  InteractiveMixin,
+  MouseEventsMixin,
 } from "../_lib/mixins";
 import { PluginConfiguration } from "../_lib/ts/types";
+import selectorMap from "../_lib/config/selectorMapping";
+import { EMouseEvent } from "../_lib/mixins/MouseEventsMixin";
 import PluginBase from "../_PluginBase/model";
+import gsap from "gsap";
+import DomUtils from "../_lib/utils/DomUtils";
 
 interface IMouseFollower {
   posX: number;
   posY: number;
   radius: number;
+  radiusProxy: number;
   color: string;
   lerpAmt: number;
   init(): void;
+  scaleIn(): void;
+  scaleOut(): void;
   lerp(start: number, end: number, amount: number): number;
 }
 
 class MouseFollower
-  extends AnimationFrameMixin(CanvasMixin(InteractiveMixin(PluginBase, true)))
+  extends AnimationFrameMixin(
+    CanvasMixin(
+      MouseEventsMixin<typeof PluginBase, Window>(PluginBase, {
+        include: [EMouseEvent.Move, EMouseEvent.Out],
+        useWindow: true,
+      })
+    )
+  )
   implements IMouseFollower
 {
-  posX = 0;
-  posY = 0;
-  lerpAmt = 0.1;
-  radius = 10;
-  color = "red";
+  posX        = 0;
+  posY        = 0;
+  lerpAmt     = 0.18;
+  radius      = 10;
+  radiusProxy = this.radius;
+  color       = "red";
 
   constructor(container: any, config: PluginConfiguration) {
     super(container, config);
@@ -35,7 +50,7 @@ class MouseFollower
     this.startAnimation();
     this.draw();
     this.resizeCanvas();
-    this.addResizeListener();
+    this.addListeners();
   }
 
   resizeCanvas() {
@@ -61,6 +76,18 @@ class MouseFollower
     this.context.fill();
   }
 
+  scaleIn() {
+    gsap.to(this, {
+      radius: this.radiusProxy,
+      ease: "Power3.Out",
+      duration: 0.1,
+    });
+  }
+
+  scaleOut() {
+    gsap.to(this, { radius: 0, ease: "Power3.Out", duration: 0.1 });
+  }
+
   onTick(): void {
     this.posX = this.lerp(this.posX, this.clientX, this.lerpAmt);
     this.posY = this.lerp(this.posY, this.clientY, this.lerpAmt);
@@ -69,10 +96,26 @@ class MouseFollower
 
   onMouseMove(event: MouseEvent): void {
     super.onMouseMove(event);
+    if (this.radius === 0) this.scaleIn();
   }
 
-  addResizeListener() {
+  onMouseEnter(event: MouseEvent): void {
+    super.onMouseEnter(event);
+  }
+
+  onMouseOut(event: MouseEvent): void {
+    super.onMouseOut(event);
+    this.scaleOut();
+  }
+
+  addListeners() {
     window.addEventListener("resize", this.resizeCanvas.bind(this));
+    const buttons = DomUtils.querySelectorAll(selectorMap.get("button"));
+
+    buttons.forEach((button) => {
+      button.addEventListener("mouseenter", this.scaleOut.bind(this));
+      button.addEventListener("mouseleave", this.scaleIn.bind(this));
+    });
   }
 }
 
