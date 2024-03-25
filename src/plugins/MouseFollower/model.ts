@@ -17,6 +17,7 @@ interface IMouseFollower {
   radiusProxy: number;
   color: string;
   lerpAmt: number;
+  isDisabled: boolean;
   init(): void;
   scaleIn(): void;
   scaleOut(): void;
@@ -34,12 +35,13 @@ class MouseFollower
   )
   implements IMouseFollower
 {
-  posX        = 0;
-  posY        = 0;
-  lerpAmt     = 0.18;
-  radius      = 10;
+  posX = 0;
+  posY = 0;
+  lerpAmt = 0.18;
+  radius = 10;
+  isDisabled = false;
   radiusProxy = this.radius;
-  color       = "red";
+  color = "red";
 
   constructor(container: any, config: PluginConfiguration) {
     super(container, config);
@@ -96,7 +98,7 @@ class MouseFollower
 
   onMouseMove(event: MouseEvent): void {
     super.onMouseMove(event);
-    if (this.radius === 0) this.scaleIn();
+    if (this.radius === 0 && !this.isDisabled) this.scaleIn();
   }
 
   onMouseEnter(event: MouseEvent): void {
@@ -113,8 +115,14 @@ class MouseFollower
     const buttons = DomUtils.querySelectorAll(selectorMap.get("button"));
 
     buttons.forEach((button) => {
-      button.addEventListener("mouseenter", this.scaleOut.bind(this));
-      button.addEventListener("mouseleave", this.scaleIn.bind(this));
+      button.addEventListener("mouseenter", (e) => {
+        this.isDisabled = true;
+        this.scaleOut.bind(this);
+      });
+      button.addEventListener("mouseleave", (e) => {
+        this.isDisabled = false;
+        this.scaleIn.bind(this);
+      });
     });
   }
 }

@@ -14,7 +14,7 @@ export type HTMLSelector = string;
 
 export type PluginSelector = HTMLSelector;
 
-export type ElementContainerCreator = {
+export type ElementCreator = {
   element: string;
   attributes: {
     [key: string]:
@@ -28,19 +28,21 @@ export type ElementContainerCreator = {
   appendTo: HTMLSelector;
 };
 
-export type PluginConfigurationContainer =
-  | HTMLSelector
-  | ElementContainerCreator;
+/**
+ * @summary The plugins root element, can either be a selector
+ * or take a custom object
+ */
+export type PluginRootElement = HTMLSelector | ElementCreator;
 
 export type PluginConfiguration = {
   name: string;
   displayName: string;
   description?: string;
-  container: PluginConfigurationContainer;
+  container: PluginRootElement;
 };
 
 /**
  * @summary UI types
  */
 
-export type PluginContainer = HTMLElement | ElementContainerCreator;
+export type PluginContainer = HTMLElement | ElementCreator;

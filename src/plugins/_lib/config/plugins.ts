@@ -1,10 +1,11 @@
 import { PluginConfiguration } from "../ts/types";
+import selectorMap from "./selectorMapping";
 
-export const PLUGIN_CONFIGURATION: PluginConfiguration[] = [
+export const pluginConfiguration: PluginConfiguration[] = [
   {
     name: "MagneticButton",
     displayName: "Magnetic Button",
-    container: ".sqs-button-block",
+    container: selectorMap.get("button"),
   },
   {
     name: "MouseFollower",
@@ -17,7 +18,7 @@ export const PLUGIN_CONFIGURATION: PluginConfiguration[] = [
           candlelightMouseFollowerPlugin: true,
         },
       },
-      appendTo: "body",
+      appendTo: selectorMap.get("body"),
     },
   },
 ];

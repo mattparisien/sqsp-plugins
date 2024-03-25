@@ -1,12 +1,12 @@
-import MODULE_MAPPING from "../config/moduleMapping";
-import { PLUGIN_CONFIGURATION } from "../config/plugins";
+import moduleMap from "../config/moduleMapping";
+import { pluginConfiguration } from "../config/plugins";
 import {
   ElementContainerCreator, PluginConfiguration,
   PluginConfigurationContainer
 } from "../ts/types";
 
 async function getPluginClass(className: string): Promise<any> {
-  const importer = MODULE_MAPPING[className];
+  const importer = moduleMap[className];
   if (!importer) {
     console.error(`Unknown class name: ${className}`);
     return undefined;
@@ -16,7 +16,7 @@ async function getPluginClass(className: string): Promise<any> {
 }
 
 function getPluginConfig(pluginName: string): PluginConfiguration {
-  return PLUGIN_CONFIGURATION.find((config) => config.name === pluginName);
+  return pluginConfiguration.find((config) => config.name === pluginName);
 }
 
 function getPluginContainers(

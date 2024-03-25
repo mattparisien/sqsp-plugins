@@ -1,6 +1,6 @@
-const MODULE_MAPPING = {
+const moduleMap = {
   MagneticButton: () => import("../../MagneticButton/model"),
   MouseFollower: () => import("../../MouseFollower/model"),
 };
 
-export default MODULE_MAPPING;
+export default moduleMap;

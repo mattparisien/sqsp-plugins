@@ -8,7 +8,7 @@ interface IPluginBase {
   setName(name: string): void;
 }
 
-class PluginBase implements IPluginBase {
+abstract class PluginBase implements IPluginBase {
   name: string;
   displayName: string;
   description: string;
