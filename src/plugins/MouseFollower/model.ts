@@ -1,23 +1,28 @@
+import gsap from "gsap";
+import selectorMap from "../_lib/config/selectorMapping";
 import {
-  CanvasMixin,
   AnimationFrameMixin,
+  CanvasMixin,
   MouseEventsMixin,
 } from "../_lib/mixins";
-import { PluginConfiguration } from "../_lib/ts/types";
-import selectorMap from "../_lib/config/selectorMapping";
+import { merge } from "lodash";
 import { EMouseEvent } from "../_lib/mixins/MouseEventsMixin";
-import PluginBase from "../_PluginBase/model";
-import gsap from "gsap";
+import { PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
+import PluginBase from "../_PluginBase/model";
+
+interface IMouseFollowerOptions extends PluginOptions {
+  color: string;
+  radius: number;
+  speed: number;
+}
 
 interface IMouseFollower {
   posX: number;
   posY: number;
-  radius: number;
-  radiusProxy: number;
-  color: string;
-  lerpAmt: number;
   isDisabled: boolean;
+  options: IMouseFollowerOptions;
+  optionsProxy: IMouseFollowerOptions;
   init(): void;
   scaleIn(): void;
   scaleOut(): void;
@@ -37,14 +42,22 @@ class MouseFollower
 {
   posX = 0;
   posY = 0;
-  lerpAmt = 0.18;
-  radius = 10;
   isDisabled = false;
-  radiusProxy = this.radius;
-  color = "red";
 
-  constructor(container: any, config: PluginConfiguration) {
-    super(container, config);
+  // Default options
+  options = {
+    speed: 0.18,
+    radius: 10,
+    color: "red",
+  };
+
+  // ATTENTION: THE PROXY OPTIONS OBJECT SHOULD NOT BE MODIFIED
+  optionsProxy = null;
+
+  constructor(container: any, options: PluginOptions) {
+    super(container);
+    this.setOptions(options);
+    console.log(this.options);
     this.init();
   }
 
@@ -53,6 +66,19 @@ class MouseFollower
     this.draw();
     this.resizeCanvas();
     this.addListeners();
+  }
+
+  setOptions(clientOptions: PluginOptions) {
+    if (!clientOptions) return;
+
+    const baseOptions = this.options;
+    const sanitizedClientOptions = this.sanitizeObject(
+      clientOptions,
+      baseOptions
+    );
+
+    this.options = merge(baseOptions, sanitizedClientOptions);
+    this.optionsProxy = {...this.options};
   }
 
   resizeCanvas() {
@@ -72,33 +98,33 @@ class MouseFollower
       this.context.canvas.height
     );
     this.context.beginPath();
-    this.context.arc(this.posX, this.posY, this.radius, 0, 2 * Math.PI);
+    this.context.arc(this.posX, this.posY, this.options.radius, 0, 2 * Math.PI);
     this.context.lineWidth = 5;
-    this.context.fillStyle = this.color;
+    this.context.fillStyle = this.options.color;
     this.context.fill();
   }
 
   scaleIn() {
-    gsap.to(this, {
-      radius: this.radiusProxy,
+    gsap.to(this.options, {
+      radius: this.optionsProxy.radius,
       ease: "Power3.Out",
       duration: 0.1,
     });
   }
 
   scaleOut() {
-    gsap.to(this, { radius: 0, ease: "Power3.Out", duration: 0.1 });
+    gsap.to(this.options, { radius: 0, ease: "Power3.Out", duration: 0.1 });
   }
 
   onTick(): void {
-    this.posX = this.lerp(this.posX, this.clientX, this.lerpAmt);
-    this.posY = this.lerp(this.posY, this.clientY, this.lerpAmt);
+    this.posX = this.lerp(this.posX, this.clientX, this.options.speed);
+    this.posY = this.lerp(this.posY, this.clientY, this.options.speed);
     this.draw();
   }
 
   onMouseMove(event: MouseEvent): void {
     super.onMouseMove(event);
-    if (this.radius === 0 && !this.isDisabled) this.scaleIn();
+    if (this.options.radius === 0 && !this.isDisabled) this.scaleIn();
   }
 
   onMouseEnter(event: MouseEvent): void {

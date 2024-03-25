@@ -64,6 +64,15 @@ class DomUtils {
   }
 
   /**
+   * Gets the element within the document that match the specified selector.
+   * @param selector The CSS selector to query for.
+   * @returns The Node element matching the selector.
+   */
+  static querySelector(selector: string): HTMLElement {
+    return document.querySelector(selector);
+  }
+
+  /**
    * Gets all elements within the document that match the specified selector.
    * @param selector The CSS selector to query for.
    * @returns A NodeList of all elements matching the selector.

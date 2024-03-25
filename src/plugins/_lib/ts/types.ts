@@ -14,7 +14,7 @@ export type HTMLSelector = string;
 
 export type PluginSelector = HTMLSelector;
 
-export type ElementCreator = {
+export type ElementTree = {
   element: string;
   attributes: {
     [key: string]:
@@ -25,6 +25,7 @@ export type ElementCreator = {
           [key: string]: string | number | boolean;
         };
   };
+  children?: Omit<ElementTree, "appendTo">[];
   appendTo: HTMLSelector;
 };
 
@@ -32,17 +33,20 @@ export type ElementCreator = {
  * @summary The plugins root element, can either be a selector
  * or take a custom object
  */
-export type PluginRootElement = HTMLSelector | ElementCreator;
+export type PluginRootElement = HTMLSelector | ElementTree;
+
+export type PluginOptions = Object;
 
 export type PluginConfiguration = {
   name: string;
   displayName: string;
   description?: string;
-  container: PluginRootElement;
+  tree: PluginRootElement;
+  module: () => Promise<any>;
 };
 
 /**
  * @summary UI types
  */
 
-export type PluginContainer = HTMLElement | ElementCreator;
+export type PluginContainer = HTMLElement | ElementTree;

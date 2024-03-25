@@ -5,12 +5,14 @@ export const pluginConfiguration: PluginConfiguration[] = [
   {
     name: "MagneticButton",
     displayName: "Magnetic Button",
-    container: selectorMap.get("button"),
+    tree: selectorMap.get("button"),
+    module: () => import("../../MagneticButton/model"),
   },
   {
     name: "MouseFollower",
     displayName: "Mouse Follower",
-    container: {
+    module: () => import("../../MouseFollower/model"),
+    tree: {
       element: "canvas",
       attributes: {
         dataset: {
@@ -18,6 +20,14 @@ export const pluginConfiguration: PluginConfiguration[] = [
           candlelightMouseFollowerPlugin: true,
         },
       },
+      children: [
+        {
+          element: "div",
+          attributes: {
+            class: "hi"
+          }
+        }
+      ],
       appendTo: selectorMap.get("body"),
     },
   },

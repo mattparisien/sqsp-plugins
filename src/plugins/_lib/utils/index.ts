@@ -1,99 +1,130 @@
-import moduleMap from "../config/moduleMapping";
 import { pluginConfiguration } from "../config/plugins";
-import {
-  ElementContainerCreator, PluginConfiguration,
-  PluginConfigurationContainer
-} from "../ts/types";
+import { ElementTree, HTMLSelector, PluginConfiguration } from "../ts/types";
+import DomUtils from "./DomUtils";
 
-async function getPluginClass(className: string): Promise<any> {
-  const importer = moduleMap[className];
-  if (!importer) {
-    console.error(`Unknown class name: ${className}`);
-    return undefined;
+const encodeHTML = (str: string): string => {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+};
+
+const getPluginOptionsFromScript = (script: HTMLOrSVGScriptElement) => {
+  const options = {};
+  const dataAttributes = script?.dataset;
+
+  if (!dataAttributes) return;
+
+  for (const [key, value] of Object.entries(dataAttributes)) {
+    options[key] = encodeHTML(value);
   }
-  const ClassModule = await importer();
-  return ClassModule.default;
-}
+
+  return options;
+};
 
 function getPluginConfig(pluginName: string): PluginConfiguration {
   return pluginConfiguration.find((config) => config.name === pluginName);
 }
 
-function getPluginContainers(
-  container: PluginConfigurationContainer
+function getContainersBySelector(
+  selector: HTMLSelector
 ): HTMLElement | HTMLElement[] {
-  let ret: HTMLElement | HTMLElement[];
-
-  if (!container) {
-    throw new Error("Plugin container cannot be null or undefined");
-  }
-
-  if (typeof container === "string") {
-    ret = Array.from(document.querySelectorAll(container as string));
-  } else if (typeof container === "object") {
-    const el = document.createElement(
-      (container as ElementContainerCreator)["element"]
-    );
-    const parent = document.querySelector(
-      (container as ElementContainerCreator)["appendTo"]
-    );
-
-    if (!parent) {
-      throw new Error(
-        "Must pass a valid parent container selector for dynamically created containers"
-      );
-    }
-
-    if (
-      Object.values((container as ElementContainerCreator).attributes)?.length >
-      0
-    ) {
-      Object.entries((container as ElementContainerCreator).attributes).forEach(
-        (entry) => {
-          if (typeof entry[1] !== "object") {
-            el[entry[0]] = entry[1];
-          } else {
-            Object.entries(entry[1]).forEach((entry2) => {
-              el[entry[0]][entry2[0]] = true;
-            });
-          }
-        }
-      );
-    }
-
-    parent.appendChild(el);
-    ret = el;
-  } else {
-    throw new Error("Unidentifiable plugin container type");
-  }
-  return ret;
+  return DomUtils.querySelectorAll(selector);
 }
 
+const createTree = (structure: ElementTree): HTMLElement => {
+  if (!structure) {
+    throw new Error("createTree: Structure argument missing");
+  }
+
+  // Create the element
+  const element = document.createElement(structure.element);
+
+  // Apply attributes
+  if (structure.attributes) {
+    for (const [attr, value] of Object.entries(structure.attributes)) {
+      if (attr === "dataset") {
+        // Special handling for dataset
+        for (const [dataKey, dataValue] of Object.entries(value)) {
+          element.dataset[dataKey] = dataValue;
+        }
+      } else {
+        element.setAttribute(attr, value as string);
+      }
+    }
+  }
+
+  // Recursively process children
+  if (structure.children) {
+    for (const child of structure.children) {
+      const childElement = createTree(child as ElementTree);
+      if (childElement) {
+        element.appendChild(childElement as HTMLElement);
+      }
+    }
+  }
+
+  // Append to specified parent, if any
+  if (structure.appendTo) {
+    const container = DomUtils.querySelector(structure.appendTo);
+
+    if (!container) {
+      throw new Error(
+        "createTree: could not identify container elememt to append tree to."
+      );
+    }
+
+    container.appendChild(element as HTMLElement);
+  }
+
+  return element;
+};
+
+const isHTMLSelector = (selector: string | Object): boolean => {
+  return typeof selector === "string";
+};
+
 export async function initializePlugin(pluginName: string): Promise<void> {
+  const script: HTMLOrSVGScriptElement = document.currentScript;
+
   window.addEventListener("load", async () => {
-    const Class = await getPluginClass(pluginName);
-    const config = await getPluginConfig(pluginName);
+    try {
+      let options, module, Class, config: PluginConfiguration, containerNodes;
 
-    if (!Class || !config) {
-      return console.error(
-        `Unable to load class or config. Plugin ${pluginName} not found.`
-      );
-    }
+      options = getPluginOptionsFromScript(script);
+      config = await getPluginConfig(pluginName); // Get the configuration object
+      module = await config.module(); // Load the module from configuration
+      Class = await module.default; // Get the module's default exported value (the class)
 
-    const containers = getPluginContainers(config.container);
+      if (!Class || !config) {
+        throw new Error(
+          `Error loading class or config. Plugin ${pluginName} not found.`
+        );
+      }
 
-    if (!containers) {
-      return console.error(
-        `Unable to extract HTML container(s) for plugin ${pluginName}`
-      );
-    }
+      if (isHTMLSelector(config.tree)) {
+        containerNodes = getContainersBySelector(config.tree as HTMLSelector);
+      } else {
+        containerNodes = createTree(config.tree as ElementTree);
+      }
 
-    if (Array.isArray(containers) && containers.length > 0) {
-      containers.forEach((container) => {
-        new Class(container, config);
-      });
-    } else {
-      new Class(containers as HTMLElement, config);
+      if (!containerNodes) {
+        throw new Error(
+          `Error finding/creating container node(s) for plugin ${pluginName}`
+        );
+      }
+
+      if (Array.isArray(containerNodes) && containerNodes.length > 0) {
+        containerNodes.forEach((container) => {
+          new Class(container, options);
+        });
+      } else {
+        new Class(containerNodes as HTMLElement, options);
+      }
+    } catch (err) {
+      console.error(err);
     }
   });
 }

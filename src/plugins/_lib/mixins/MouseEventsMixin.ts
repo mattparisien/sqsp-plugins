@@ -83,7 +83,6 @@ function MouseEventsMixin<T extends Constructor, U>(
         const includedEvents = Object.values(options["include"]);
 
         actions.push(...includedEvents);
-        console.log(actions);
       }
 
       // If the exclude option is passed, only exclude the options in the array

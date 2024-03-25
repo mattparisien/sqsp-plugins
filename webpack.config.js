@@ -1,9 +1,9 @@
-const path                 = require("path");
-const generateEntryPoints  = require("./scripts/generateWebpackEntries");
-const HtmlWebpackPlugin    = require("html-webpack-plugin");
+const path = require("path");
+const generateEntryPoints = require("./scripts/generateWebpackEntries");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const TerserPlugin         = require("terser-webpack-plugin");
-const CopywebpackPlugin    = require("copy-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+const CopywebpackPlugin = require("copy-webpack-plugin");
 
 require("dotenv").config(); // Load variables from .env file into process.env
 const { EnvironmentPlugin } = require("webpack");
@@ -56,6 +56,27 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: "src/index.html",
+      scriptLoading: "blocking",
+      inject: true,
+      templateParameters: (compilation, assets, assetTags, options) => {
+    
+        assetTags.bodyTags.forEach((script) => {
+          script.attributes["data-color"] = "blue";
+          script.attributes["data-radius"] = "20";
+          script.attributes["data-speed"] = "0.1";
+          script.attributes["data-blah"] = "ok";
+          script.attributes["data-hello"] = "ok";
+        });
+        return {
+          compilation,
+          webpackConfig: compilation.options,
+          htmlWebpackPlugin: {
+            tags: assetTags,
+            files: assets,
+            options,
+          },
+        };
+      },
     }),
     new MiniCssExtractPlugin({
       filename: "[name]/assets/styles/main.css",
