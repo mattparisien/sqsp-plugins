@@ -58,6 +58,7 @@ function MouseEventsMixin<T extends Constructor, U>(
       this.onMouseMove = this.onMouseMove.bind(this);
       this.onMouseOut = this.onMouseOut.bind(this);
 
+      console.log(this.element, 'emeentss');
       if ("window" in this.element || this.element instanceof HTMLElement) {
         this.addEventListeners();
       } else {
