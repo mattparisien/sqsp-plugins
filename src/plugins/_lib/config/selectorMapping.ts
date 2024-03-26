@@ -4,7 +4,7 @@ const selectorMap = new Map<string, string | null>([
   ["header", ".header-announcement-bar-wrapper"],
   ["menu", ".header-menu"],
   ["footer", "footer"],
-  ["button", ".sqs-button-block"],
+  ["button", ".sqs-block-block"],
 ]);
 
 export default selectorMap;
