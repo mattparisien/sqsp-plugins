@@ -57,7 +57,6 @@ class MouseFollower
   constructor(container: any, options: PluginOptions) {
     super(container);
     this.setOptions(options);
-    console.log(this.options);
     this.init();
   }
 
@@ -132,7 +131,6 @@ class MouseFollower
   }
 
   onMouseOut(event: MouseEvent): void {
-    console.log('mouse out!', event.currentTarget);
     super.onMouseOut(event);
     this.scaleOut();
   }

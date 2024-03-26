@@ -51,6 +51,7 @@ function MouseEventsMixin<T extends Constructor, U>(
       super(element as HTMLElement, config);
 
       this.element = (options as IWindowMouseEventsOptions)?.useWindow ? this.element = window : this.element = element;
+      console.log('the element', this.element);
 
       // Bind event handlers to ensure 'this' context is preserved when called as event listeners
       this.onMouseEnter = this.onMouseEnter.bind(this);
