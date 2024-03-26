@@ -48,7 +48,7 @@ class MouseFollower
   options = {
     speed: 0.18,
     radius: 10,
-    color: "red",
+    color: "black",
   };
 
   // ATTENTION: THE PROXY OPTIONS OBJECT SHOULD NOT BE MODIFIED
@@ -78,7 +78,7 @@ class MouseFollower
     );
 
     this.options = merge(baseOptions, sanitizedClientOptions);
-    this.optionsProxy = {...this.options};
+    this.optionsProxy = { ...this.options };
   }
 
   resizeCanvas() {
@@ -138,14 +138,14 @@ class MouseFollower
 
   addListeners() {
     window.addEventListener("resize", this.resizeCanvas.bind(this));
-    const buttons = DomUtils.querySelectorAll(selectorMap.get("button"));
+    const links = DomUtils.querySelectorAll(["button", "a"]);
 
-    buttons.forEach((button) => {
-      button.addEventListener("mouseenter", (e) => {
+    links.forEach((link) => {
+      link.addEventListener("mouseenter", (e) => {
         this.isDisabled = true;
         this.scaleOut.bind(this);
       });
-      button.addEventListener("mouseleave", (e) => {
+      link.addEventListener("mouseleave", (e) => {
         this.isDisabled = false;
         this.scaleIn.bind(this);
       });

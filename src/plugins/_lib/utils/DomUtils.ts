@@ -77,8 +77,14 @@ class DomUtils {
    * @param selector The CSS selector to query for.
    * @returns A NodeList of all elements matching the selector.
    */
-  static querySelectorAll(selector: string): HTMLElement[] {
-    return Array.from(document.querySelectorAll(selector));
+  static querySelectorAll(selector: string | string[]): HTMLElement[] {
+    if (!selector) return;
+
+    return Array.from(
+      document.querySelectorAll(
+        Array.isArray(selector) ? selector.join(",") : selector
+      )
+    );
   }
 }
 
