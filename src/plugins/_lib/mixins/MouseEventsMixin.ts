@@ -50,8 +50,7 @@ function MouseEventsMixin<T extends Constructor, U>(
       const config  = args[1];
       super(element as HTMLElement, config);
 
-      this.element = (options as IWindowMouseEventsOptions)?.useWindow ? this.element = window : this.element = element;
-      console.log('the element', this.element);
+      this.element = (options as IWindowMouseEventsOptions)?.useWindow ? this.element = window.top : this.element = element;
 
       // Bind event handlers to ensure 'this' context is preserved when called as event listeners
       this.onMouseEnter = this.onMouseEnter.bind(this);
@@ -59,7 +58,6 @@ function MouseEventsMixin<T extends Constructor, U>(
       this.onMouseMove = this.onMouseMove.bind(this);
       this.onMouseOut = this.onMouseOut.bind(this);
 
-      console.log(this.element, 'emeentss');
       if ("window" in this.element || this.element instanceof HTMLElement) {
         this.addEventListeners();
       } else {
