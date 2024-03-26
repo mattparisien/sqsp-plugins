@@ -110,7 +110,7 @@ export async function initializePlugin(pluginName: string): Promise<void> {
         containerNodes = createTree(config.tree as ElementTree);
       }
 
-      if (!containerNodes || !containerNodes.length) {
+      if (!containerNodes) {
         throw new Error(
           `Error finding/creating container node(s) for plugin ${pluginName}`
         );
