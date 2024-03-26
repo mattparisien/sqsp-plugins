@@ -132,6 +132,7 @@ class MouseFollower
   }
 
   onMouseOut(event: MouseEvent): void {
+    console.log('mouse out!', event.currentTarget);
     super.onMouseOut(event);
     this.scaleOut();
   }
@@ -142,6 +143,7 @@ class MouseFollower
 
     links.forEach((link) => {
       link.addEventListener("mouseenter", (e) => {
+        console.log('enter!', e.currentTarget);
         this.isDisabled = true;
         this.scaleOut.bind(this);
       });

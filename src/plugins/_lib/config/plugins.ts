@@ -20,14 +20,6 @@ export const pluginConfiguration: PluginConfiguration[] = [
           candlelightMouseFollowerPlugin: true,
         },
       },
-      children: [
-        {
-          element: "div",
-          attributes: {
-            class: "hi"
-          }
-        }
-      ],
       appendTo: selectorMap.get("body"),
     },
   },
