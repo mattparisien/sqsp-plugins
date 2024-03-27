@@ -8,7 +8,7 @@ interface IMagnetic {
   removeMagneticEffect(el: HTMLElement): void;
 }
 
-function MagneticMixin<T extends Constructor>(Base: T) {
+function MagneticMixin<T extends new (...args: any[]) => any>(Base: T) {
   return class extends Base implements IMagnetic {
     magneticStrength: number = 100;
 

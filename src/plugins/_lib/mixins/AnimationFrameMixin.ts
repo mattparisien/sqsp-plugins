@@ -6,7 +6,7 @@ interface IAnimationFrame {
   onTick(): void;
 }
 
-function AnimationFrameMixin<T extends Constructor>(Base: T) {
+function AnimationFrameMixin<T extends  new (...args: any[]) => any>(Base: T) {
   return class extends Base implements IAnimationFrame {
     private animationFrameId: number | null = null;
 

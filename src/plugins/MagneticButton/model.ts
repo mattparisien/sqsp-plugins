@@ -1,12 +1,18 @@
 import { MagneticMixin, MouseEventsMixin } from "../_lib/mixins";
-import { PluginOptions } from "../_lib/ts/types";
+import { Constructor, PluginOptions } from "../_lib/ts/types";
 import PluginBase from "../_PluginBase/model";
 
 interface IMagneticButtonOptions {
   strength: number;
 }
 
-class MagneticButton extends MouseEventsMixin(MagneticMixin(PluginBase<IMagneticButtonOptions>)) {
+class MagneticButton extends MouseEventsMixin(
+  MagneticMixin(
+    PluginBase<IMagneticButtonOptions> as Constructor<
+      PluginBase<IMagneticButtonOptions>
+    >
+  )
+) {
   constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
     super(container, options);
   }

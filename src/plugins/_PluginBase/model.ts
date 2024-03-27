@@ -11,7 +11,7 @@ interface IPluginBase<T> {
   sanitizeOptions(source: Object, target: object): Partial<Object>
 }
 
-class PluginBase<T> implements IPluginBase<T> {
+abstract class PluginBase<T> implements IPluginBase<T> {
   name: string;
   displayName: string;
   description: string;

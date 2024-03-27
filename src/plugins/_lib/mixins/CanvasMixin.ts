@@ -5,7 +5,7 @@ interface ICanvas {
   context: CanvasRenderingContext2D;
 }
 
-function CanvasMixin<T extends Constructor>(Base: T) {
+function CanvasMixin<T extends new (...args: any[]) => any>(Base: T) {
   return class extends Base implements ICanvas {
     canvas  = null;
     context = null;

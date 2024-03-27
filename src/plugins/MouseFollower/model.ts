@@ -7,7 +7,7 @@ import {
 } from "../_lib/mixins";
 import { merge } from "lodash";
 import { EMouseEvent } from "../_lib/mixins/MouseEventsMixin";
-import { PluginOptions } from "../_lib/ts/types";
+import { Constructor, PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
 
@@ -32,8 +32,10 @@ interface IMouseFollower {
 class MouseFollower
   extends AnimationFrameMixin(
     CanvasMixin(
-      MouseEventsMixin<typeof PluginBase<IMouseFollowerOptions>, Window>(
-        PluginBase<IMouseFollowerOptions>,
+      MouseEventsMixin<Constructor<PluginBase<IMouseFollowerOptions>>, Window>(
+        PluginBase<IMouseFollowerOptions> as Constructor<
+          PluginBase<IMouseFollowerOptions>
+        >,
         {
           include: [EMouseEvent.Move, EMouseEvent.Out],
           useWindow: true,

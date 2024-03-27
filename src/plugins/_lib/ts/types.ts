@@ -2,11 +2,11 @@
  * @summary Configuration types
  */
 
-export  type Constructor<T = {}> = new (...args: any[]) => T;
- export type AbstractConstructor<T = {}> = Function & { prototype: T };
- 
- export type AnyConstructor<T = {}> = Constructor<T> | AbstractConstructor<T>;
+export type Constructor<T = {}> = new (...args: any[]) => T;
 
+export type AbstractConstructor<T = {}> = Function & { prototype: T };
+
+export type AnyConstructor<T = {}> = Constructor<T> | AbstractConstructor<T>;
 
 export type PluginElement = HTMLElement;
 
