@@ -16,7 +16,7 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
   constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
     super(container, options);
 
-    this.magneticService = new MagneticService();
+    this.magneticService    = new MagneticService();
     this.mouseEventsService = new MouseEventsService(this.container, [
       {
         event: EMouseEvent.Move,
@@ -29,7 +29,9 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
     ]);
   }
 
-  public init(): void {}
+  public init(): void {
+
+  }
 
   protected validateOptions(
     options: PluginOptions<IMagneticButtonOptions>

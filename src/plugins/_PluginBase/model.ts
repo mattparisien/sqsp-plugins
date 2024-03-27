@@ -70,7 +70,7 @@ abstract class PluginBase<T> {
   protected options: PluginOptions<T>;   // The options for the plugin instance
   protected container: HTMLElement;   // The plugin HTML container element
 
-  abstract allowedOptions:  PluginAllowedOptions<T>; // The allowed plugin options
+  protected abstract allowedOptions:  PluginAllowedOptions<T>; // The allowed plugin options
 
 
   constructor(container: HTMLElement, options: PluginOptions<T>) {
