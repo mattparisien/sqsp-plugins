@@ -1,10 +1,14 @@
 import { MagneticMixin, MouseEventsMixin } from "../_lib/mixins";
-import { PluginConfiguration } from "../_lib/ts/types";
+import { PluginOptions } from "../_lib/ts/types";
 import PluginBase from "../_PluginBase/model";
 
-class MagneticButton extends MouseEventsMixin(MagneticMixin(PluginBase)) {
-  constructor(container: any, config: PluginConfiguration) {
-    super(container, config);
+interface IMagneticButtonOptions {
+  strength: number;
+}
+
+class MagneticButton extends MouseEventsMixin(MagneticMixin(PluginBase<IMagneticButtonOptions>)) {
+  constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
+    super(container, options);
   }
 
   onMouseMove(event: MouseEvent): void {

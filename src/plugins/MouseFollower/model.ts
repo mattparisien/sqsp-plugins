@@ -11,7 +11,7 @@ import { PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
 
-interface IMouseFollowerOptions extends PluginOptions {
+interface IMouseFollowerOptions {
   color: string;
   radius: number;
   speed: number;
@@ -32,10 +32,13 @@ interface IMouseFollower {
 class MouseFollower
   extends AnimationFrameMixin(
     CanvasMixin(
-      MouseEventsMixin<typeof PluginBase, Window>(PluginBase, {
-        include: [EMouseEvent.Move, EMouseEvent.Out],
-        useWindow: true,
-      })
+      MouseEventsMixin<typeof PluginBase<IMouseFollowerOptions>, Window>(
+        PluginBase<IMouseFollowerOptions>,
+        {
+          include: [EMouseEvent.Move, EMouseEvent.Out],
+          useWindow: true,
+        }
+      )
     )
   )
   implements IMouseFollower
@@ -54,7 +57,7 @@ class MouseFollower
   // ATTENTION: THE PROXY OPTIONS OBJECT SHOULD NOT BE MODIFIED
   optionsProxy = null;
 
-  constructor(container: any, options: PluginOptions) {
+  constructor(container: any, options: PluginOptions<IMouseFollowerOptions>) {
     super(container);
     this.setOptions(options);
     this.init();
@@ -67,7 +70,7 @@ class MouseFollower
     this.addListeners();
   }
 
-  setOptions(clientOptions: PluginOptions) {
+  setOptions(clientOptions: PluginOptions<IMouseFollowerOptions>) {
     if (!clientOptions) return;
 
     const baseOptions = this.options;
@@ -141,7 +144,7 @@ class MouseFollower
 
     links.forEach((link) => {
       link.addEventListener("mouseenter", (e) => {
-        console.log('enter!', e.currentTarget);
+        console.log("enter!", e.currentTarget);
         this.isDisabled = true;
         this.scaleOut.bind(this);
       });

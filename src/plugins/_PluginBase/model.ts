@@ -1,24 +1,24 @@
 import { PluginOptions } from "../_lib/ts/types";
 
-interface IPluginBase {
+interface IPluginBase<T> {
   name: string;
   displayName: string;
   description: string;
   container: HTMLElement;
-  options: PluginOptions;
+  options: PluginOptions<T>;
   setName(name: string): void;
   sanitizeObject<T extends object, U extends object>(source: T, target: U): Partial<T>;
   sanitizeOptions(source: Object, target: object): Partial<Object>
 }
 
-class PluginBase implements IPluginBase {
+class PluginBase<T> implements IPluginBase<T> {
   name: string;
   displayName: string;
   description: string;
   container: HTMLElement;
-  options: PluginOptions;
+  options: PluginOptions<T>;
 
-  constructor(container?: HTMLElement, options?: PluginOptions) {
+  constructor(container?: HTMLElement, options?: PluginOptions<T>) {
     this.container = container;
     this.options   = options;
   }

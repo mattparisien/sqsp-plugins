@@ -1,5 +1,5 @@
-import { Constructor } from "../ts/types";
 import gsap from "gsap";
+import { Constructor } from "../ts/types";
 
 interface IMagnetic {
   magneticStrength: number;
@@ -14,7 +14,7 @@ function MagneticMixin<T extends Constructor>(Base: T) {
 
     constructor(...args: any[]) {
       const element = args[0];
-      const config  = args[1];
+      const config = args[1];
       super(element as HTMLElement, config);
     }
 
