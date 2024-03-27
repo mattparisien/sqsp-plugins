@@ -66,6 +66,7 @@ module.exports = {
           script.attributes["data-speed"] = "0.1";
           script.attributes["data-blah"] = "ok";
           script.attributes["data-hello"] = "ok";
+          script.attributes["data-strength"] = "500";
         });
         return {
           compilation,

@@ -72,19 +72,6 @@ class MouseFollower
     this.addListeners();
   }
 
-  setOptions(clientOptions: PluginOptions<IMouseFollowerOptions>) {
-    if (!clientOptions) return;
-
-    const baseOptions = this.options;
-    const sanitizedClientOptions = this.sanitizeObject(
-      clientOptions,
-      baseOptions
-    );
-
-    this.options = merge(baseOptions, sanitizedClientOptions);
-    this.optionsProxy = { ...this.options };
-  }
-
   resizeCanvas() {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;

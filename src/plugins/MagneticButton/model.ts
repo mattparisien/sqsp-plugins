@@ -1,30 +1,62 @@
-import { MagneticMixin, MouseEventsMixin } from "../_lib/mixins";
-import { Constructor, PluginOptions } from "../_lib/ts/types";
-import PluginBase from "../_PluginBase/model";
+import { MagneticService, MouseEventsService } from "../_lib/services";
+import { EMouseEvent } from "../_lib/services/MouseEventsService";
+import { PluginOptions } from "../_lib/ts/types";
+import PluginBase, { PluginAllowedOptions } from "../_PluginBase/model";
 
 interface IMagneticButtonOptions {
   strength: number;
 }
 
-class MagneticButton extends MouseEventsMixin(
-  MagneticMixin(
-    PluginBase<IMagneticButtonOptions> as Constructor<
-      PluginBase<IMagneticButtonOptions>
-    >
-  )
-) {
+class MagneticButton extends PluginBase<IMagneticButtonOptions> {
+  private magneticService;
+  private mouseEventsService;
+
+  allowedOptions: PluginAllowedOptions<IMagneticButtonOptions> = ["strength"];
+
   constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
     super(container, options);
+
+    this.magneticService = new MagneticService();
+    this.mouseEventsService = new MouseEventsService(this.container, [
+      {
+        event: EMouseEvent.Move,
+        handler: this.onMouseMove,
+      },
+      {
+        event: EMouseEvent.Leave,
+        handler: this.onMouseLeave,
+      },
+    ]);
+  }
+
+  public init(): void {}
+
+  protected validateOptions(
+    options: PluginOptions<IMagneticButtonOptions>
+  ): PluginOptions<IMagneticButtonOptions> {
+    const validatedOptions = {};
+
+    Object.entries(options).forEach((entry) => {
+      this.allowedOptions.forEach((allowedOption) => {
+        if (entry[0] === allowedOption) {
+          validatedOptions[allowedOption] = entry[1];
+        }
+      });
+    });
+
+    return validatedOptions as PluginOptions<IMagneticButtonOptions>;
   }
 
   onMouseMove(event: MouseEvent): void {
-    super.onMouseMove(event);
-    this.applyMagneticEffect(this.container, this.clientX, this.clientY);
+    this.magneticService.applyMagneticEffect(
+      this.container,
+      this.mouseEventsService.clientX,
+      this.mouseEventsService.clientY
+    );
   }
 
   onMouseLeave(event: MouseEvent): void {
-    super.onMouseLeave(event);
-    this.removeMagneticEffect(this.container);
+    this.magneticService.removeMagneticEffect(this.container);
   }
 }
 
