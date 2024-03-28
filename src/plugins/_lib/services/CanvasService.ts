@@ -10,16 +10,17 @@ class CanvasService extends PluginService implements ICanvasService {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D | null = null;
 
-  constructor() {
+  constructor(container: HTMLCanvasElement) {
     super();
-    this.canvas = document.createElement("canvas");
+    this.canvas = container;
+    this.context = this.canvas.getContext("2d");
+
   }
 
   init(): void {}
 
   initializeCanvas(element: HTMLCanvasElement): void {
     this.canvas = element;
-    this.context = this.canvas.getContext("2d");
   }
 }
 

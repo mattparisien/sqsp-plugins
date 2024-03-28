@@ -72,14 +72,12 @@ abstract class PluginBase<T> {
 
   protected abstract allowedOptions:  PluginAllowedOptions<T>; // The allowed plugin options
 
-
   constructor(container: HTMLElement, options: PluginOptions<T>) {
     if (new.target === PluginBase) {
       throw new TypeError("Cannot construct PluginBase instances directly");
     }
     
     this.container = container;
-    this.options = this.validateOptions(options);
   }
 
   // Validate the provided options against the allowed options.

@@ -46,18 +46,23 @@ class MouseFollower
   constructor(container: any, options: PluginOptions<IMouseFollowerOptions>) {
     super(container, options);
 
-    this._mouseEventsService = new MouseEventsService(this.container, [
+    this.options = this.validateOptions(options);
+    this.options._radius = this.options.radius; 
+
+    this._canvasService = new CanvasService(this.container as HTMLCanvasElement);
+    this._tickService = new AnimationFrameService(this.onTick.bind(this));
+    this._mouseEventsService = new MouseEventsService(window, [
       {
         event: EMouseEvent.Move,
-        handler: this.onMouseMove,
+        handler: this.onMouseMove.bind(this),
       },
       {
         event: EMouseEvent.Enter,
-        handler: this.onMouseEnter,
+        handler: this.onMouseEnter.bind(this),
       },
       {
         event: EMouseEvent.Out,
-        handler: this.onMouseOut,
+        handler: this.onMouseOut.bind(this),
       },
     ]);
   }
@@ -108,16 +113,20 @@ class MouseFollower
   }
 
   scaleIn() {
-    gsap.to(this.options, {
-      radius: this.options._radius,
-      ease: "Power3.Out",
-      duration: 0.1,
-    });
+    if (this.options.radius !== this.options._radius) { // Only scale in if not already at original radius
+      gsap.to(this.options, {
+        radius: this.options._radius,
+        ease: "Power3.Out",
+        duration: 0.1,
+      });
+    }
   }
 
   scaleOut() {
-    this.options._radius = this.options.radius;
-    gsap.to(this.options, { radius: 0, ease: "Power3.Out", duration: 0.1 });
+    if (this.options.radius !== 0) { // Only scale out if not already at radius 0
+      this.options._radius = this.options.radius; // Update _radius to current radius before scaling out
+      gsap.to(this.options, { radius: 0, ease: "Power3.Out", duration: 0.1 });
+    }
   }
 
   onTick(): void {
@@ -135,13 +144,19 @@ class MouseFollower
   }
 
   onMouseMove(event: MouseEvent): void {
-    if (this.options.radius === 0 && !this.isDisabled) this.scaleIn();
+    console.log(this.options.radius, this.isDisabled);
+    if (this.options.radius === 0 && !this.isDisabled) {
+      this.scaleIn();
+      this.isDisabled = true;
+    };
   }
 
-  onMouseEnter(event: MouseEvent): void {}
+  onMouseEnter(event: MouseEvent): void {
+  }
 
   onMouseOut(event: MouseEvent): void {
     this.scaleOut();
+    this.isDisabled = false;
   }
 
   addListeners() {
@@ -150,13 +165,12 @@ class MouseFollower
 
     links.forEach((link) => {
       link.addEventListener("mouseenter", (e) => {
-        console.log("enter!", e.currentTarget);
         this.isDisabled = true;
-        this.scaleOut.bind(this);
+        this.scaleOut();
       });
       link.addEventListener("mouseleave", (e) => {
         this.isDisabled = false;
-        this.scaleIn.bind(this);
+        this.scaleIn();;
       });
     });
   }

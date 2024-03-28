@@ -118,10 +118,12 @@ export async function initializePlugin(pluginName: string): Promise<void> {
 
       if (Array.isArray(containerNodes) && containerNodes.length > 0) {
         containerNodes.forEach((container) => {
-          new Class(container, options);
+          const instance = new Class(container, options);
+          instance.init();
         });
       } else {
-        new Class(containerNodes as HTMLElement, options);
+        const instance = new Class(containerNodes as HTMLElement, options);
+        instance.init();
       }
     } catch (err) {
       console.error(err);
