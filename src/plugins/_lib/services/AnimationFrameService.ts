@@ -1,14 +1,20 @@
+import PluginService from "./PluginService";
+
 interface IAnimationFrameService {
   startAnimation(): void;
   stopAnimation(): void;
   onTick(timestamp: number): void;
 }
 
-class AnimationFrameService implements IAnimationFrameService {
+class AnimationFrameService
+  extends PluginService
+  implements IAnimationFrameService
+{
   private animationFrameId: number | null = null;
   private onTickCallback: (timestamp: number) => void;
 
   constructor(onTickCallback?: (timestamp: number) => void) {
+    super();
     this.onTickCallback = onTickCallback || ((timestamp: number) => {});
   }
 
@@ -31,6 +37,10 @@ class AnimationFrameService implements IAnimationFrameService {
 
   onTick(timestamp: number): void {
     this.onTickCallback(timestamp);
+  }
+
+  init(): void {
+    this.startAnimation();
   }
 }
 

@@ -1,4 +1,5 @@
 import { has } from "lodash";
+import PluginService from "./PluginService";
 
 export enum EMouseEvent {
   Enter = "MouseEnter",
@@ -33,7 +34,7 @@ interface IMouseEventOption {
 
 // Combine the interfaces using a union type to allow only one of the keys
 
-class MouseEventsService {
+class MouseEventsService extends PluginService {
   clientX = 0;
   clientY = 0;
   isHovering = false;
@@ -41,19 +42,18 @@ class MouseEventsService {
   private options?: IMouseEventOption[];
 
   constructor(element: Window | HTMLElement, options?: IMouseEventOption[]) {
+    super();
     this.element = element;
     this.options = options;
 
     // Bind event handlers to ensure 'this' context is preserved when called as event listeners
     this.onMouseEnter = this.onMouseEnter.bind(this);
     this.onMouseLeave = this.onMouseLeave.bind(this);
-    this.onMouseMove  = this.onMouseMove.bind(this);
-    this.onMouseOut   = this.onMouseOut.bind(this);
-
-    this.addEventListeners(options);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseOut = this.onMouseOut.bind(this);
   }
 
-  removeEventListeners(): void {
+  private removeEventListeners(): void {
     Object.values(EMouseEvent).forEach((event) => {
       this.element.removeEventListener(event.toLowerCase(), this[`on${event}`]);
     });
@@ -91,6 +91,10 @@ class MouseEventsService {
   onMouseOut(event: MouseEvent, callback?: TMouseEventHandler): void {
     if (this.isHovering) this.isHovering = false;
     callback?.(event);
+  }
+
+  init(): void {
+    this.addEventListeners(this.options);
   }
 
   // Ensure to call removeEventListeners when the service is no longer needed

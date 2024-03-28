@@ -35,8 +35,9 @@ export type ElementTree = {
  */
 export type PluginRootElement = HTMLSelector | ElementTree;
 
-export type PluginOptions<T> = T & {};
-
+export type PluginOptions<T> = T & {
+  [K in keyof T as `_${string & K}`]?: T[K]
+};
 export type PluginConfiguration = {
   name: string;
   displayName: string;

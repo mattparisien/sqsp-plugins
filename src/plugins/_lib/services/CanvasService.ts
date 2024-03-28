@@ -1,17 +1,21 @@
+import PluginService from "./PluginService";
+
 interface ICanvasService {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D | null;
   initializeCanvas(element: HTMLCanvasElement): void;
 }
 
-class CanvasService implements ICanvasService {
+class CanvasService extends PluginService implements ICanvasService {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D | null = null;
 
   constructor() {
-    // Initially, the canvas and context are not set.
-    this.canvas = document.createElement("canvas"); // Placeholder canvas
+    super();
+    this.canvas = document.createElement("canvas");
   }
+
+  init(): void {}
 
   initializeCanvas(element: HTMLCanvasElement): void {
     this.canvas = element;

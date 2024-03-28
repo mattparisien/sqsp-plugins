@@ -8,16 +8,16 @@ interface IMagneticButtonOptions {
 }
 
 class MagneticButton extends PluginBase<IMagneticButtonOptions> {
-  private magneticService;
-  private mouseEventsService;
+  private _magneticService: MagneticService;
+  private _mouseEventsService: MouseEventsService;
 
   allowedOptions: PluginAllowedOptions<IMagneticButtonOptions> = ["strength"];
 
   constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
     super(container, options);
 
-    this.magneticService    = new MagneticService();
-    this.mouseEventsService = new MouseEventsService(this.container, [
+    this._magneticService = new MagneticService();
+    this._mouseEventsService = new MouseEventsService(this.container, [
       {
         event: EMouseEvent.Move,
         handler: this.onMouseMove,
@@ -30,7 +30,8 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
   }
 
   public init(): void {
-
+    this._magneticService.init();
+    this._mouseEventsService.init();
   }
 
   protected validateOptions(
@@ -50,15 +51,15 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
   }
 
   onMouseMove(event: MouseEvent): void {
-    this.magneticService.applyMagneticEffect(
+    this._magneticService.applyMagneticEffect(
       this.container,
-      this.mouseEventsService.clientX,
-      this.mouseEventsService.clientY
+      this._mouseEventsService.clientX,
+      this._mouseEventsService.clientY
     );
   }
 
   onMouseLeave(event: MouseEvent): void {
-    this.magneticService.removeMagneticEffect(this.container);
+    this._magneticService.removeMagneticEffect(this.container);
   }
 }
 

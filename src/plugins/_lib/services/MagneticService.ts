@@ -1,4 +1,5 @@
 import gsap from "gsap";
+import PluginService from "./PluginService";
 
 interface IMagneticService {
   magneticStrength: number;
@@ -7,7 +8,7 @@ interface IMagneticService {
   removeMagneticEffect(el: HTMLElement): void;
 }
 
-class MagneticService implements IMagneticService {
+class MagneticService extends PluginService implements IMagneticService {
   magneticStrength: number = 100;
 
   setMagneticStrength(strength: number): void {
@@ -35,6 +36,7 @@ class MagneticService implements IMagneticService {
       ease: "Elastic.easeOut",
     });
   }
+  init(): void {}
 }
 
 export default MagneticService;
