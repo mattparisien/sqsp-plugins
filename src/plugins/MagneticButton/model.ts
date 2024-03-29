@@ -11,12 +11,14 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
   private _magneticService: MagneticService;
   private _mouseEventsService: MouseEventsService;
 
+  name: string = "Magnetic Button";
+
   options: PluginOptions<IMagneticButtonOptions> = {
     strength: 100,
   };
 
   constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
-    super(container);
+    super(container, "Magnetic Button");
 
     this.options = this.validateOptions(options);
     this._magneticService = new MagneticService();

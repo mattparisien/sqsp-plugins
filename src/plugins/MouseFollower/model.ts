@@ -44,7 +44,7 @@ class MouseFollower
   };
 
   constructor(container: any, options: PluginOptions<IMouseFollowerOptions>) {
-    super(container);
+    super(container, "Mouse Follower");
 
     this.options = this.validateOptions(options);
     this.options._radius = this.options.radius;

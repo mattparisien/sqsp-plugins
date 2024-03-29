@@ -2,6 +2,12 @@
  * @summary Configuration types
  */
 
+export enum EAspectRatio {
+  Portrait = "4:5",
+  Square = "1:1",
+  Landscape = "5:4",
+}
+
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
 export type AbstractConstructor<T = {}> = Function & { prototype: T };
@@ -16,7 +22,7 @@ export type PluginSelector = HTMLSelector;
 
 export type ElementTree = {
   element: string;
-  attributes: {
+  attributes?: {
     [key: string]:
       | string
       | number
@@ -36,7 +42,7 @@ export type ElementTree = {
 export type PluginRootElement = HTMLSelector | ElementTree;
 
 export type PluginOptions<T> = T & {
-  [K in keyof T as `_${string & K}`]?: T[K]
+  [K in keyof T as `_${string & K}`]?: T[K];
 };
 export type PluginConfiguration = {
   name: string;

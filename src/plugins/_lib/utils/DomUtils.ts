@@ -22,8 +22,15 @@ class DomUtils {
    * @param element The element to add the class to.
    * @param className The class name to add.
    */
-  static addClass(element: HTMLElement, className: string): void {
-    element.classList.add(className);
+  static addClass(element: HTMLElement, args: string | string[]): HTMLElement {
+    if (Array.isArray(args)) {
+      // If args is an array, apply each class name using spread syntax
+      element.classList.add(...args);
+    } else {
+      // If args is a single class name, just add it directly
+      element.classList.add(args);
+    }
+    return element;
   }
 
   /**
@@ -85,6 +92,51 @@ class DomUtils {
         Array.isArray(selector) ? selector.join(",") : selector
       )
     );
+  }
+
+  /**
+   *
+   * @param container The contains to append the elements to
+   * @param children An array of elements to append to the conainer
+   * @returns void
+   */
+  static appendMany(container: HTMLElement, children: HTMLElement[]): void {
+    if (!container || !children || !children.length) return;
+
+    children.forEach((child) => container.appendChild(child));
+  }
+
+  /**
+   *
+   * @param elements The element to wrap
+   * @param wrapperEl A string corresponding to the html element to use to wrap the element
+   * @returns The wrapped element
+   */
+  static wrapElement(element: HTMLElement, wrapperEl: string): HTMLElement {
+    if (!element || !wrapperEl || wrapperEl.trim() === "") return;
+
+    const wrapper = document.createElement(wrapperEl);
+    wrapper.appendChild(element);
+
+    return wrapper;
+  }
+  /**
+   *
+   * @param elements The elements to wrap
+   * @param wrapperEl A string corresponding to the html element to use to wrap the elements
+   * @returns The wrapped elements
+   */
+  static wrapMany(elements: HTMLElement[], wrapperEl: string): HTMLElement[] {
+    if (!elements || !elements.length) return;
+
+    const wrappedElements = [];
+
+    elements.forEach((element) => {
+      const wrapper = DomUtils.wrapElement(element, wrapperEl);
+      wrappedElements.push(wrapper);
+    });
+
+    return wrappedElements;
   }
 }
 

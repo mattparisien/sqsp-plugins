@@ -14,13 +14,13 @@ export const pluginConfiguration: PluginConfiguration[] = [
     module: () => import("../../MouseFollower/model"),
     tree: {
       element: "canvas",
-      attributes: {
-        dataset: {
-          candlelightPlugin: true,
-          candlelightMouseFollowerPlugin: true,
-        },
-      },
       appendTo: selectorMap.get("body"),
     },
   },
+  {
+    name: "ImageTrailer",
+    displayName: "Image Trailer",
+    tree: selectorMap.get("section"),
+    module: () => import("../../ImageTrailer/model")
+  }
 ];

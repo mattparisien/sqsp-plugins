@@ -5,6 +5,7 @@ const selectorMap = new Map<string, string | null>([
   ["menu", ".header-menu"],
   ["footer", "footer"],
   ["button", ".sqs-block-button"],
+  ["section", "section.page-section"]
 ]);
 
 export default selectorMap;

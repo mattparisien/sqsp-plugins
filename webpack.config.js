@@ -59,9 +59,14 @@ module.exports = {
       scriptLoading: "blocking",
       inject: true,
       templateParameters: (compilation, assets, assetTags, options) => {
-    
         assetTags.bodyTags.forEach((script) => {
-          // script.attributes["data-color"] = "blue";
+          const imageUrls = [
+            "https://images.pexels.com/photos/19845821/pexels-photo-19845821/free-photo-of-sheep-on-a-hillside-at-sunset.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            "https://images.pexels.com/photos/17554347/pexels-photo-17554347/free-photo-of-taxis-in-front-of-palace-in-istanbul.jpeg",
+            "https://images.pexels.com/photos/20612683/pexels-photo-20612683/free-photo-of-a-large-group-of-yellow-tulips-in-a-field.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            "https://images.pexels.com/photos/20240203/pexels-photo-20240203/free-photo-of-man-standing-with-arm-raised-near-curtain.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          ];
+          script.attributes["data-image-urls"] = imageUrls;
           // script.attributes["data-radius"] = "20";
           // script.attributes["data-speed"] = "0.1";
           // script.attributes["data-blah"] = "ok";
