@@ -9,8 +9,13 @@ interface IImageTrailerOptions {
   imageUrls: string[];
 }
 
+type TAnimatableImage = {
+  image: HTMLElement;
+  isAnimating: boolean;
+};
+
 class ImageTrailer extends PluginBase<IImageTrailerOptions> {
-  private _images: HTMLElement[] = [];
+  private _images: TAnimatableImage[] = [];
   private _mouseEventsService: MouseEventsService;
   private _imageService: ImageService;
   private _actionInterval: number | null = null;
@@ -69,7 +74,10 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
         ["trailer-image", `aspect-${detail.aspect}`]
       );
 
-      this._images.push(imageWrapper);
+      this._images.push({
+        image: imageWrapper,
+        isAnimating: false,
+      });
       this.container.appendChild(imageWrapper);
     });
   }
@@ -119,17 +127,19 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
   }
 
   private performAction(): void {
-    this.animateImage(this._currImageIdx);
+    if (!this._images[this._currImageIdx].isAnimating) {
+      this.animateImage(this._currImageIdx);
 
-    if (this._currImageIdx === this._images.length - 1) this._currImageIdx = 0;
-    else this._currImageIdx += 1;
-    // Implement the specific action you want to perform here
+      if (this._currImageIdx === this._images.length - 1)
+        this._currImageIdx = 0;
+      else this._currImageIdx += 1;
+    }
   }
 
   private animateImage(imageIdx: number) {
-    const img = this._images[imageIdx];
-    img.style.left = this._mouseEventsService.clientX + "px";
-    img.style.top = this._mouseEventsService.clientY + "px";
+    const obj = this._images[imageIdx];
+    obj.image.style.left = this._mouseEventsService.clientX + "px";
+    obj.image.style.top = this._mouseEventsService.clientY + "px";
   }
 }
 
