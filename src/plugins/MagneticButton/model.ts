@@ -11,10 +11,12 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
   private _magneticService: MagneticService;
   private _mouseEventsService: MouseEventsService;
 
-  allowedOptions: PluginAllowedOptions<IMagneticButtonOptions> = ["strength"];
+  options: PluginOptions<IMagneticButtonOptions> = {
+    strength: 100,
+  };
 
   constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
-    super(container, options);
+    super(container);
 
     this.options = this.validateOptions(options);
     this._magneticService = new MagneticService();
@@ -38,17 +40,7 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
   protected validateOptions(
     options: PluginOptions<IMagneticButtonOptions>
   ): PluginOptions<IMagneticButtonOptions> {
-    const validatedOptions = {};
-
-    Object.entries(options).forEach((entry) => {
-      this.allowedOptions.forEach((allowedOption) => {
-        if (entry[0] === allowedOption) {
-          validatedOptions[allowedOption] = entry[1];
-        }
-      });
-    });
-
-    return validatedOptions as PluginOptions<IMagneticButtonOptions>;
+    return this.mergeOptions(options, this.options);
   }
 
   onMouseMove(event: MouseEvent): void {

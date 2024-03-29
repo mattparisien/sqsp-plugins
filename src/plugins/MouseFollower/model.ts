@@ -2,12 +2,12 @@ import gsap from "gsap";
 import {
   AnimationFrameService,
   CanvasService,
-  MouseEventsService
+  MouseEventsService,
 } from "../_lib/services";
+import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
-import { EMouseEvent } from "../_lib/services/MouseEventsService";
-import PluginBase, { PluginAllowedOptions } from "../_PluginBase/model";
+import PluginBase from "../_PluginBase/model";
 
 interface IMouseFollowerOptions {
   color: string;
@@ -37,19 +37,21 @@ class MouseFollower
   posY = 0;
   isDisabled = false;
 
-  allowedOptions: PluginAllowedOptions<IMouseFollowerOptions> = [
-    "color",
-    "radius",
-    "speed",
-  ];
+  options: PluginOptions<IMouseFollowerOptions> = {
+    color: "red",
+    radius: 10,
+    speed: 0.1,
+  };
 
   constructor(container: any, options: PluginOptions<IMouseFollowerOptions>) {
-    super(container, options);
+    super(container);
 
     this.options = this.validateOptions(options);
-    this.options._radius = this.options.radius; 
+    this.options._radius = this.options.radius;
 
-    this._canvasService = new CanvasService(this.container as HTMLCanvasElement);
+    this._canvasService = new CanvasService(
+      this.container as HTMLCanvasElement
+    );
     this._tickService = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
       {
@@ -70,17 +72,7 @@ class MouseFollower
   protected validateOptions(
     options: PluginOptions<IMouseFollowerOptions>
   ): PluginOptions<IMouseFollowerOptions> {
-    const validatedOptions = {};
-
-    Object.entries(options).forEach((entry) => {
-      this.allowedOptions.forEach((allowedOption) => {
-        if (entry[0] === allowedOption) {
-          validatedOptions[allowedOption] = entry[1];
-        }
-      });
-    });
-
-    return validatedOptions as PluginOptions<IMouseFollowerOptions>;
+    return this.mergeOptions(options, this.options);
   }
 
   resizeCanvas() {
@@ -113,7 +105,8 @@ class MouseFollower
   }
 
   scaleIn() {
-    if (this.options.radius !== this.options._radius) { // Only scale in if not already at original radius
+    if (this.options.radius !== this.options._radius) {
+      // Only scale in if not already at original radius
       gsap.to(this.options, {
         radius: this.options._radius,
         ease: "Power3.Out",
@@ -123,7 +116,8 @@ class MouseFollower
   }
 
   scaleOut() {
-    if (this.options.radius !== 0) { // Only scale out if not already at radius 0
+    if (this.options.radius !== 0) {
+      // Only scale out if not already at radius 0
       this.options._radius = this.options.radius; // Update _radius to current radius before scaling out
       gsap.to(this.options, { radius: 0, ease: "Power3.Out", duration: 0.1 });
     }
@@ -144,15 +138,13 @@ class MouseFollower
   }
 
   onMouseMove(event: MouseEvent): void {
-    console.log(this.options.radius, this.isDisabled);
     if (this.options.radius === 0 && !this.isDisabled) {
       this.scaleIn();
       this.isDisabled = true;
-    };
+    }
   }
 
-  onMouseEnter(event: MouseEvent): void {
-  }
+  onMouseEnter(event: MouseEvent): void {}
 
   onMouseOut(event: MouseEvent): void {
     this.scaleOut();
@@ -170,7 +162,7 @@ class MouseFollower
       });
       link.addEventListener("mouseleave", (e) => {
         this.isDisabled = false;
-        this.scaleIn();;
+        this.scaleIn();
       });
     });
   }

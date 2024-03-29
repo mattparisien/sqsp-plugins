@@ -61,12 +61,12 @@ module.exports = {
       templateParameters: (compilation, assets, assetTags, options) => {
     
         assetTags.bodyTags.forEach((script) => {
-          script.attributes["data-color"] = "blue";
-          script.attributes["data-radius"] = "20";
-          script.attributes["data-speed"] = "0.1";
-          script.attributes["data-blah"] = "ok";
-          script.attributes["data-hello"] = "ok";
-          script.attributes["data-strength"] = "500";
+          // script.attributes["data-color"] = "blue";
+          // script.attributes["data-radius"] = "20";
+          // script.attributes["data-speed"] = "0.1";
+          // script.attributes["data-blah"] = "ok";
+          // script.attributes["data-hello"] = "ok";
+          // script.attributes["data-strength"] = "500";
         });
         return {
           compilation,
