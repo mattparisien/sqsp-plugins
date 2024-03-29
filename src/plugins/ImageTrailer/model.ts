@@ -10,10 +10,15 @@ interface IImageTrailerOptions {
 }
 
 class ImageTrailer extends PluginBase<IImageTrailerOptions> {
+  private _images: HTMLElement[] = [];
   private _mouseEventsService: MouseEventsService;
   private _imageService: ImageService;
-
-  private elements: HTMLElement[] = [];
+  private _actionInterval: number | null = null;
+  private _debounceTimeout: number | null = null;
+  private _actionIntervalTime = 200; // nth number of seconds (5000ms = 5 seconds)
+  private _debounceIntervalTime = 1000;
+  private _isMouseMoving = false;
+  private _currImageIdx = 0;
 
   options: PluginOptions<IImageTrailerOptions> = {
     imageUrls: [],
@@ -45,6 +50,7 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
     this._imageService.init();
     this._mouseEventsService.init();
     this.appendImages();
+    console.log(this);
   }
 
   private onImageLoad() {}
@@ -63,6 +69,7 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
         ["trailer-image", `aspect-${detail.aspect}`]
       );
 
+      this._images.push(imageWrapper);
       this.container.appendChild(imageWrapper);
     });
   }
@@ -80,7 +87,50 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
     return mergedOptions;
   }
 
-  onMouseMove(event: MouseEvent): void {}
+  onMouseMove(event: MouseEvent): void {
+    if (!this._isMouseMoving) {
+      this._isMouseMoving = true;
+      this.startActionInterval();
+    }
+
+    // Clear any existing debounce timeout
+    if (this._debounceTimeout !== null) {
+      clearTimeout(this._debounceTimeout);
+    }
+    // Set a new debounce timeout
+    this._debounceTimeout = window.setTimeout(() => {
+      this._isMouseMoving = false;
+      this.stopActionInterval();
+    }, this._debounceIntervalTime);
+  }
+
+  private startActionInterval(): void {
+    this.stopActionInterval(); // Ensure no intervals are already running
+    this._actionInterval = window.setInterval(() => {
+      this.performAction();
+    }, this._actionIntervalTime);
+  }
+
+  private stopActionInterval(): void {
+    if (this._actionInterval !== null) {
+      clearInterval(this._actionInterval);
+      this._actionInterval = null;
+    }
+  }
+
+  private performAction(): void {
+    this.animateImage(this._currImageIdx);
+
+    if (this._currImageIdx === this._images.length - 1) this._currImageIdx = 0;
+    else this._currImageIdx += 1;
+    // Implement the specific action you want to perform here
+  }
+
+  private animateImage(imageIdx: number) {
+    const img = this._images[imageIdx];
+    img.style.left = this._mouseEventsService.clientX + "px";
+    img.style.top = this._mouseEventsService.clientY + "px";
+  }
 }
 
 export default ImageTrailer;

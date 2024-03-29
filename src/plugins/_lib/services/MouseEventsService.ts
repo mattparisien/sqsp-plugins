@@ -14,17 +14,6 @@ interface IMouseEventOption {
   handler?: (event: MouseEvent) => void;
 }
 
-// // Define interfaces for the exclusive options
-// interface IExcludeMouseEventsOptions {
-//   exclude: EMouseEvent[];
-//   include?: never;
-// }
-
-// interface IIncludeMouseEventsOptions {
-//   exclude?: never;
-//   include: EMouseEvent[];
-// }
-
 type TMouseEventHandler = (event: MouseEvent) => void;
 
 interface IMouseEventOption {
@@ -37,14 +26,22 @@ interface IMouseEventOption {
 class MouseEventsService extends PluginService {
   clientX = 0;
   clientY = 0;
+
+
   isHovering = false;
-  private element: Window | HTMLElement;
-  private options?: IMouseEventOption[];
+  isMouseMoving = false;
+
+  
+  private _element: Window | HTMLElement;
+  private _options?: IMouseEventOption[];
+  private _mouseMoveTimeOut?: number; // Timeout ID for debouncing
+  private _debounceDelay = 300; // Delay in milliseconds
+  
 
   constructor(element: Window | HTMLElement, options?: IMouseEventOption[]) {
     super();
-    this.element = element;
-    this.options = options;
+    this._element = element;
+    this._options = options;
 
     // Bind event handlers to ensure 'this' context is preserved when called as event listeners
     this.onMouseEnter = this.onMouseEnter.bind(this);
@@ -55,13 +52,13 @@ class MouseEventsService extends PluginService {
 
   private removeEventListeners(): void {
     Object.values(EMouseEvent).forEach((event) => {
-      this.element.removeEventListener(event.toLowerCase(), this[`on${event}`]);
+      this._element.removeEventListener(event.toLowerCase(), this[`on${event}`]);
     });
   }
 
   private addEventListeners(options: IMouseEventOption[]): void {
     options.forEach(({ event, handler }) => {
-      this.element.addEventListener(event.toLowerCase(), (e) =>
+      this._element.addEventListener(event.toLowerCase(), (e) =>
         this[`on${event}`]?.(e, handler)
       );
     });
@@ -85,6 +82,11 @@ class MouseEventsService extends PluginService {
     if (!this.isHovering) this.isHovering = true;
     this.clientX = event.clientX;
     this.clientY = event.clientY;
+    this.isMouseMoving = true;
+    clearTimeout(this._mouseMoveTimeOut); // Clear existing timer
+    this._mouseMoveTimeOut = window.setTimeout(() => {
+      this.isMouseMoving = false; // Set to false after a period of inactivity
+    }, this._debounceDelay);
     callback?.(event);
   }
 
@@ -94,7 +96,7 @@ class MouseEventsService extends PluginService {
   }
 
   init(): void {
-    this.addEventListeners(this.options);
+    this.addEventListeners(this._options);
   }
 
   // Ensure to call removeEventListeners when the service is no longer needed

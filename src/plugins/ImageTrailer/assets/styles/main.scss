@@ -8,8 +8,7 @@ section.page-section[data-candlelight-plugin-image-trailer] {
     .trailer-image {
         width: 100px;
         position: absolute;
-        top: 50%;
-        left: 50%;
+        transform: translate(-50%, -50%);
         pointer-events: none;
 
         img {

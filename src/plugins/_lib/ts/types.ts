@@ -49,6 +49,7 @@ export type PluginConfiguration = {
   displayName: string;
   description?: string;
   tree: PluginRootElement;
+  isActive: boolean;
   module: () => Promise<any>;
 };
 
