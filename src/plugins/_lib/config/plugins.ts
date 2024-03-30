@@ -18,12 +18,5 @@ export const pluginConfiguration: PluginConfiguration[] = [
       element: "canvas",
       appendTo: selectorMap.get("body"),
     },
-  },
-  {
-    name: "ImageTrailer",
-    displayName: "Image Trailer",
-    tree: selectorMap.get("section"),
-    isActive: true,
-    module: () => import("../../ImageTrailer/model")
   }
 ];
