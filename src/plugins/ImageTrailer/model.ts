@@ -109,11 +109,16 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
       );
 
       this._images.push({
+<<<<<<< HEAD
         node: imageWrapper,
         isAnimating: false,
         gsap: {
           fadeOutTimeline: this.createFadeOutTimeline(imageWrapper),
         },
+=======
+        image: imageWrapper,
+        isAnimating: false,
+>>>>>>> 8d91833493c500f561cf0d4e1ec50604a995e64c
       });
       this.container.appendChild(imageWrapper);
     });
@@ -171,6 +176,7 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
     img.node.style.top = this._mouseEventsService.clientY + "px";
   }
 
+<<<<<<< HEAD
   private fadeOutImage(imageIdx: number): void {
     const tl = this._images[imageIdx].gsap.fadeOutTimeline;
 
@@ -184,6 +190,22 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
       opacity: 0,
       duration: this._imageFadeDuration,
     });
+=======
+  private performAction(): void {
+    if (!this._images[this._currImageIdx].isAnimating) {
+      this.animateImage(this._currImageIdx);
+
+      if (this._currImageIdx === this._images.length - 1)
+        this._currImageIdx = 0;
+      else this._currImageIdx += 1;
+    }
+  }
+
+  private animateImage(imageIdx: number) {
+    const obj = this._images[imageIdx];
+    obj.image.style.left = this._mouseEventsService.clientX + "px";
+    obj.image.style.top = this._mouseEventsService.clientY + "px";
+>>>>>>> 8d91833493c500f561cf0d4e1ec50604a995e64c
   }
 }
 
