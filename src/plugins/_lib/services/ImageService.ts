@@ -1,7 +1,7 @@
 import PluginService from "./PluginService";
 import { EAspectRatio } from "../ts/types";
 
-interface IImageDetails {
+export interface IImageDetails {
   src: string;
   node: HTMLImageElement;
   aspect: EAspectRatio;
@@ -22,27 +22,29 @@ class ImageService extends PluginService {
     this.extendImageDetails(images);
   }
 
-  private loadImage(imageDetails: IImageDetails): void {
-    const { src, onLoad, onError } = imageDetails;
+  private loadImage(imageDetails: IImageDetails): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = imageDetails.src;
 
-    const img = new Image();
-    img.src = src;
+      img.onload = (event: Event) => {
+        imageDetails.isLoaded = true;
+        if (imageDetails.onLoad) {
+          imageDetails.onLoad(event);
+        }
+        resolve(); // Resolve the promise when the image is loaded
+      };
 
-    img.onload = (event : Event) => {
-      imageDetails.isLoaded = true; // Update the loaded status
-      if (onLoad) {
-        onLoad(event);
-      }
-    };
+      img.onerror = (event: ErrorEvent) => {
+        imageDetails.isLoaded = false;
+        if (imageDetails.onError) {
+          imageDetails.onError(event);
+        }
+        reject(); // Reject the promise on error
+      };
 
-    img.onerror = (event : ErrorEvent) => {
-      imageDetails.isLoaded = false; // Update the loaded status on error
-      if (onError) {
-        onError(event);
-      }
-    };
-
-    imageDetails.node = img; // Assign the created image to the node property
+      imageDetails.node = img;
+    });
   }
 
   isImageLoaded(src: string): boolean {
@@ -54,12 +56,15 @@ class ImageService extends PluginService {
     return this._images;
   }
 
-  getImageNodes() : HTMLImageElement[] {
-    return this._images.map(image => image.node);
+  getImageNodes(): HTMLImageElement[] {
+    return this._images.map((image) => image.node);
   }
 
-  preloadImages(): void {
-    this._images.forEach((image) => this.loadImage(image));
+  preloadImages(): Promise<IImageDetails[]> {
+    const loadPromises = this._images.map((image) => this.loadImage(image));
+    return Promise.all(loadPromises)
+      .then(() => this._images)
+      .catch((err) => err);
   }
 
   extendImageDetails(restrictedImageDetails: TRestrictedImageDetails[]) {
@@ -71,8 +76,8 @@ class ImageService extends PluginService {
     }));
   }
 
-  init(): void {
-    this.preloadImages();
+  init(): Promise<IImageDetails[]> {
+    return this.preloadImages();
   }
 
   destroy(): void {

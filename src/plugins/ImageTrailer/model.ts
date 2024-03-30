@@ -1,24 +1,59 @@
 import { MouseEventsService } from "../_lib/services";
-import ImageService from "../_lib/services/ImageService";
+import ImageService, { IImageDetails } from "../_lib/services/ImageService";
 import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { EAspectRatio, PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
+import gsap from "gsap";
 
 interface IImageTrailerOptions {
   imageUrls: string[];
 }
 
+interface IAnimatableImage {
+  node: HTMLElement;
+  isAnimating: boolean;
+  gsap: {
+    fadeOutTimeline: GSAPTimeline;
+  };
+}
+
 class ImageTrailer extends PluginBase<IImageTrailerOptions> {
-  private _images: HTMLElement[] = [];
+  // #region Private members
+
+  // The aspect ratio for the images
+  private readonly _imageAspect: EAspectRatio = EAspectRatio.Portrait;
+
+  // Services needed for this plugin
+  private _images: IAnimatableImage[] = [];
   private _mouseEventsService: MouseEventsService;
   private _imageService: ImageService;
-  private _actionInterval: number | null = null;
-  private _debounceTimeout: number | null = null;
-  private _actionIntervalTime = 200; // nth number of seconds (5000ms = 5 seconds)
-  private _debounceIntervalTime = 1000;
+
+  // Whether the mouse is currently moving
   private _isMouseMoving = false;
+
+  // Whether the image is currently moving
+  private _isImageMoving = true;
+
+  // The amount of time an image should fade
+  private _imageFadeDuration = 2;
+
+  // The amount of time elapsed before a new image appears
+  private _imageIntervalDuration: number = 100;
+
+  // How quickly to set _isMouseMoving to false after the user stops moving mouse
+  private _debounceTimeoutDuration: number = 1000;
+
+  // Tracking the timeout id
+  private _debounceTimeoutId: any = null;
+
+  // Tracking the interval id
+  private _imageIntervalId: any = null;
+
+  // Tracking the current image index
   private _currImageIdx = 0;
+
+  // #endregion
 
   options: PluginOptions<IImageTrailerOptions> = {
     imageUrls: [],
@@ -32,7 +67,7 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
     this._imageService = new ImageService(
       options.imageUrls.map((url) => ({
         src: url,
-        aspect: EAspectRatio.Square,
+        aspect: this._imageAspect,
         onLoad: this.onImageLoad.bind(this),
         onError: this.onImageLoadError.bind(this),
       }))
@@ -47,18 +82,22 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
   }
 
   init(): void {
-    this._imageService.init();
-    this._mouseEventsService.init();
-    this.appendImages();
-    console.log(this);
+    this._imageService
+      .init()
+      .then((imageDetails: IImageDetails[]) => {
+        console.log(imageDetails);
+        this.appendImages(imageDetails);
+        this._mouseEventsService.init();
+      })
+      .catch((err) => console.error("One or more images were not loaded"));
   }
 
   private onImageLoad() {}
 
   private onImageLoadError() {}
 
-  private appendImages() {
-    this._imageService.getImageDetails().forEach((detail) => {
+  private appendImages(imageDetails: IImageDetails[]) {
+    imageDetails.forEach((detail) => {
       const imageWrapper = DomUtils.addClass(
         DomUtils.wrapElement(
           DomUtils.addClass(DomUtils.wrapElement(detail.node, "div"), [
@@ -69,7 +108,13 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
         ["trailer-image", `aspect-${detail.aspect}`]
       );
 
-      this._images.push(imageWrapper);
+      this._images.push({
+        node: imageWrapper,
+        isAnimating: false,
+        gsap: {
+          fadeOutTimeline: this.createFadeOutTimeline(imageWrapper),
+        },
+      });
       this.container.appendChild(imageWrapper);
     });
   }
@@ -88,48 +133,57 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
   }
 
   onMouseMove(event: MouseEvent): void {
-    if (!this._isMouseMoving) {
-      this._isMouseMoving = true;
-      this.startActionInterval();
-    }
+    this.animateOnMouseMove();
+  }
 
-    // Clear any existing debounce timeout
-    if (this._debounceTimeout !== null) {
-      clearTimeout(this._debounceTimeout);
-    }
-    // Set a new debounce timeout
-    this._debounceTimeout = window.setTimeout(() => {
+  private animateOnMouseMove() {
+    this.moveImage(this._currImageIdx);
+
+    this._isMouseMoving = true;
+    clearTimeout(this._debounceTimeoutId);
+    this._debounceTimeoutId = setTimeout(() => {
       this._isMouseMoving = false;
-      this.stopActionInterval();
-    }, this._debounceIntervalTime);
-  }
+    }, this._debounceTimeoutDuration);
 
-  private startActionInterval(): void {
-    this.stopActionInterval(); // Ensure no intervals are already running
-    this._actionInterval = window.setInterval(() => {
-      this.performAction();
-    }, this._actionIntervalTime);
-  }
-
-  private stopActionInterval(): void {
-    if (this._actionInterval !== null) {
-      clearInterval(this._actionInterval);
-      this._actionInterval = null;
+    if (!this._imageIntervalId) {
+      this._imageIntervalId = setInterval(() => {
+        if (!this._isMouseMoving) {
+          clearInterval(this._imageIntervalId);
+          this._imageIntervalId = null;
+        } else {
+          this.fadeOutImage(this._currImageIdx);
+          this.incrementCurrImageIdx();
+        }
+      }, this._imageIntervalDuration);
     }
   }
 
-  private performAction(): void {
-    this.animateImage(this._currImageIdx);
-
-    if (this._currImageIdx === this._images.length - 1) this._currImageIdx = 0;
-    else this._currImageIdx += 1;
-    // Implement the specific action you want to perform here
+  private incrementCurrImageIdx() {
+    if (this._currImageIdx < this._images.length - 1) this._currImageIdx += 1;
+    else this._currImageIdx = 0;
   }
 
-  private animateImage(imageIdx: number) {
+  private moveImage(imageIdx: number): void {
     const img = this._images[imageIdx];
-    img.style.left = this._mouseEventsService.clientX + "px";
-    img.style.top = this._mouseEventsService.clientY + "px";
+
+    img.node.style.opacity = "1";
+    img.node.style.left = this._mouseEventsService.clientX + "px";
+    img.node.style.top = this._mouseEventsService.clientY + "px";
+  }
+
+  private fadeOutImage(imageIdx: number): void {
+    const tl = this._images[imageIdx].gsap.fadeOutTimeline;
+
+    if (!tl.isActive()) {
+      tl.restart();
+    }
+  }
+
+  private createFadeOutTimeline(el: HTMLElement): GSAPTimeline {
+    return gsap.timeline({ paused: true }).to(el, {
+      opacity: 0,
+      duration: this._imageFadeDuration,
+    });
   }
 }
 

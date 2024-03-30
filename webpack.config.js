@@ -64,7 +64,12 @@ module.exports = {
             "https://images.pexels.com/photos/19845821/pexels-photo-19845821/free-photo-of-sheep-on-a-hillside-at-sunset.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
             "https://images.pexels.com/photos/17554347/pexels-photo-17554347/free-photo-of-taxis-in-front-of-palace-in-istanbul.jpeg",
             "https://images.pexels.com/photos/20612683/pexels-photo-20612683/free-photo-of-a-large-group-of-yellow-tulips-in-a-field.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-            "https://images.pexels.com/photos/20240203/pexels-photo-20240203/free-photo-of-man-standing-with-arm-raised-near-curtain.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+            "https://images.pexels.com/photos/20240203/pexels-photo-20240203/free-photo-of-man-standing-with-arm-raised-near-curtain.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            "https://images.pexels.com/photos/4123018/pexels-photo-4123018.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            "https://images.pexels.com/photos/20170882/pexels-photo-20170882/free-photo-of-a-woman-looking-at-a-wall-of-drawings.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            "https://images.pexels.com/photos/20187399/pexels-photo-20187399/free-photo-of-amazing-autumn.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            "https://images.pexels.com/photos/20250495/pexels-photo-20250495/free-photo-of-valz-iii.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            "https://images.pexels.com/photos/14764505/pexels-photo-14764505.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
           ];
           script.attributes["data-image-urls"] = imageUrls;
           // script.attributes["data-radius"] = "20";
