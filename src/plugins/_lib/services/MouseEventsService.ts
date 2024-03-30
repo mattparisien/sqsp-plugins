@@ -24,19 +24,23 @@ interface IMouseEventOption {
 // Combine the interfaces using a union type to allow only one of the keys
 
 class MouseEventsService extends PluginService {
+  private _prevClientX = 0; // Previous mouse X position
+  private _prevClientY = 0; // Previous mouse Y position
+  private _prevTime = Date.now(); // Timestamp of the last mouse move
+  private _mouseSpeed = 0; // Mouse speed in pixels per second
+
   clientX = 0;
   clientY = 0;
-
 
   isHovering = false;
   isMouseMoving = false;
 
-  
   private _element: Window | HTMLElement;
   private _options?: IMouseEventOption[];
   private _mouseMoveTimeOut?: number; // Timeout ID for debouncing
   private _debounceDelay = 300; // Delay in milliseconds
-  
+
+  private _maxSpeed = 1000; // This value might need adjustment
 
   constructor(element: Window | HTMLElement, options?: IMouseEventOption[]) {
     super();
@@ -52,7 +56,10 @@ class MouseEventsService extends PluginService {
 
   private removeEventListeners(): void {
     Object.values(EMouseEvent).forEach((event) => {
-      this._element.removeEventListener(event.toLowerCase(), this[`on${event}`]);
+      this._element.removeEventListener(
+        event.toLowerCase(),
+        this[`on${event}`]
+      );
     });
   }
 
@@ -82,6 +89,7 @@ class MouseEventsService extends PluginService {
     if (!this.isHovering) this.isHovering = true;
     this.clientX = event.clientX;
     this.clientY = event.clientY;
+    this.calculateMouseSpeed(event.clientX, event.clientY);
     this.isMouseMoving = true;
     clearTimeout(this._mouseMoveTimeOut); // Clear existing timer
     this._mouseMoveTimeOut = window.setTimeout(() => {
@@ -93,6 +101,27 @@ class MouseEventsService extends PluginService {
   onMouseOut(event: MouseEvent, callback?: TMouseEventHandler): void {
     if (this.isHovering) this.isHovering = false;
     callback?.(event);
+  }
+  private calculateMouseSpeed(currentX: number, currentY: number): void {
+    const currentTime = Date.now();
+    const timeElapsed = (currentTime - this._prevTime) / 1000; // Time in seconds
+    const distance = Math.sqrt((currentX - this._prevClientX) ** 2 + (currentY - this._prevClientY) ** 2);
+
+    // Calculate speed in pixels per second
+    let speed = timeElapsed > 0 ? distance / timeElapsed : 0;
+
+    // Normalize the speed to a value between 0 and 1
+    this._mouseSpeed = Math.min(speed / this._maxSpeed, 1);
+
+    // Update previous position and time for the next calculation
+    this._prevClientX = currentX;
+    this._prevClientY = currentY;
+    this._prevTime = currentTime;
+  }
+
+
+  getMouseSpeed(): number {
+    return this._mouseSpeed;
   }
 
   init(): void {
