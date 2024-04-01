@@ -4,22 +4,64 @@ import PluginService from "./PluginService";
 interface IWebGLService {}
 
 interface IShaders {
-  vertex: string,
+  vertex: string;
   fragment: string;
+}
+
+interface IUniformInfo {
+  name: string;
+}
+
+export interface IUniformData {
+  name: string;
+  type: "1f" | "1i" | "2f" | "2i" | "3f" | "3i" | "4f" | "4i" | "Matrix4fv";
+  value:
+    | number
+    | [number, number]
+    | [number, number, number]
+    | [number, number, number, number]
+    | Float32Array;
+}
+
+export interface IAttributeData {
+  name: string; // Name of the attribute in GLSL
+  buffer: WebGLBuffer; // Buffer containing the data for this attribute
+  size: number; // Number of components per vertex attribute (e.g., 2 for vec2)
+  type: GLenum; // Data type of each component in the array
+  normalize: GLboolean; // Whether integer data values should be normalized
+  stride: GLsizei; // Offset in bytes between consecutive vertex attributes
+  offset: GLintptr; // Offset in bytes of the first component in the buffer
 }
 
 class WebGLService extends PluginService implements IWebGLService {
   private _canvasService: CanvasService | null = null;
   private _gl: WebGLRenderingContext | null = null;
   private _cnv: HTMLCanvasElement | null = null;
-  private _buffers: WebGLBuffer = null;
+  private _positionBuffer: WebGLBuffer | null = null;
+  private _shaderProgram: any | null = null;
   private _vsSource: string | null = null;
   private _fsSource: string | null = null;
+  private _uniformsInfo: IUniformInfo[] | null = null;
 
-  constructor(cnv: HTMLCanvasElement, shaders: IShaders) {
+  public attribLocations: { [key: string]: number };
+  public uniformLocations: { [key: string]: WebGLUniformLocation };
+
+  constructor(
+    cnv: HTMLCanvasElement,
+    shaders: IShaders,
+    uniformsInfo: IUniformInfo[]
+  ) {
     super();
     this._canvasService = new CanvasService(cnv, "webgl");
     this._gl = this._canvasService.context as WebGLRenderingContext;
+    this._uniformsInfo = uniformsInfo;
+
+    if (!this._gl) {
+      throw new Error(
+        "Unable to initialize WebGL. Your browser may not support it."
+      );
+    }
+
     this._cnv = this._canvasService.canvas;
     this._vsSource = shaders?.vertex;
     this._fsSource = shaders?.fragment;
@@ -50,7 +92,7 @@ class WebGLService extends PluginService implements IWebGLService {
       this._gl.STATIC_DRAW
     );
 
-    this._buffers = positionBuffer;
+    this._positionBuffer = positionBuffer;
   }
 
   private loadShader(source, type) {
@@ -59,23 +101,32 @@ class WebGLService extends PluginService implements IWebGLService {
     this._gl.compileShader(shader);
 
     if (!this._gl.getShaderParameter(shader, this._gl.COMPILE_STATUS)) {
-        alert('An error occurred compiling the shaders: ' + this._gl.getShaderInfoLog(shader));
-        this._gl.deleteShader(shader);
-        return null;
+      alert(
+        "An error occurred compiling the shaders: " +
+          this._gl.getShaderInfoLog(shader)
+      );
+      this._gl.deleteShader(shader);
+      return null;
     }
 
     return shader;
   }
 
-  public initShaders() {
-
+  public initShaders(): WebGLProgram {
     if (!this._fsSource || !this._vsSource) {
-      throw new Error("Unable to init shaders. Both vertex and fragment shaders must be passed into WebGLService constructor");
-    } 
+      throw new Error(
+        "Unable to init shaders. Both vertex and fragment shaders must be passed into WebGLService constructor"
+      );
+    }
 
-
-    const vertexShader = this.loadShader(this._gl.VERTEX_SHADER, this._vsSource);
-    const fragmentShader = this.loadShader(this._gl.FRAGMENT_SHADER, this._fsSource);
+    const vertexShader = this.loadShader(
+      this._vsSource,
+      this._gl.VERTEX_SHADER
+    );
+    const fragmentShader = this.loadShader(
+      this._fsSource,
+      this._gl.FRAGMENT_SHADER
+    );
 
     const shaderProgram = this._gl.createProgram();
     this._gl.attachShader(shaderProgram, vertexShader);
@@ -83,65 +134,80 @@ class WebGLService extends PluginService implements IWebGLService {
     this._gl.linkProgram(shaderProgram);
 
     if (!this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS)) {
-        throw new Error('Unable to initialize the shader program: ' + this._gl.getProgramInfoLog(shaderProgram));
+      throw new Error(
+        "Unable to initialize the shader program: " +
+          this._gl.getProgramInfoLog(shaderProgram)
+      );
     }
 
     return shaderProgram;
   }
 
-  // private drawScene() {
-  //   this._gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
-  //   this._gl.clearDepth(1.0); // Clear everything
-  //   this._gl.enable(this._gl.DEPTH_TEST); // Enable depth testing
-  //   this._gl.depthFunc(this._gl.LEQUAL); // Near things obscure far things
+  public drawScene(uniforms: IUniformData[]) {
+    if (!this._gl || !this._shaderProgram) {
+      throw new Error("WebGL context or shader program is not initialized.");
+    }
+    this._gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    this._gl.clearDepth(1.0);
+    this._gl.enable(this._gl.DEPTH_TEST);
+    this._gl.depthFunc(this._gl.LEQUAL);
+    this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
+    this._gl.useProgram(this._shaderProgram);
+    this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._positionBuffer);
+    uniforms.forEach((uniform) => {
+      const location = this.uniformLocations[uniform.name];
+      if (!location) return;
+      switch (uniform.type) {
+        case "1f":
+          this._gl.uniform1f(location, uniform.value as number);
+          break;
+        case "2f":
+          this._gl.uniform2f(location, ...(uniform.value as [number, number]));
+          break;
+      }
+    });
+    const vertexCount = 4;
+    this._gl.drawArrays(this._gl.TRIANGLE_STRIP, 0, vertexCount);
+  }
 
-  //   // Clear the canvas before we start drawing on it.
-  //   this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
+  private setupUniformLocations() {
+    if (!this._shaderProgram) {
+      console.error("Shader program is not initialized.");
+      return;
+    }
 
-  //   // Set the positions of vertices
-  //   {
-  //     const numComponents = 2; // pull out 2 values per iteration
-  //     const type = this._gl.FLOAT; // the data in the buffer is 32bit floats
-  //     const normalize = false; // don't normalize
-  //     const stride = 0; // how many bytes to get from one set of values to the next
-  //     const offset = 0; // how many bytes inside the buffer to start from
-  //     this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._buffers.position);
-  //     this._gl.vertexAttribPointer(
-  //       programInfo.attribLocations.vertexPosition,
-  //       numComponents,
-  //       type,
-  //       normalize,
-  //       stride,
-  //       offset
-  //     );
-  //     this._gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-  //   }
-
-  //   // Tell Webthis._gl to use our program when drawing
-  //   this._gl.useProgram(programInfo.program);
-
-  //   // Set the shader uniforms
-  //   this._gl.uniform2f(
-  //     programInfo.uniformLocations.mousePosition,
-  //     mousePosition.x,
-  //     mousePosition.y
-  //   );
-  //   this._gl.uniform2f(
-  //     programInfo.uniformLocations.resolution,
-  //     this._gl.canvas.clientWidth,
-  //     this._gl.canvas.clientHeight
-  //   );
-
-  //   {
-  //     const offset = 0;
-  //     const vertexCount = 4;
-  //     this._gl.drawArrays(this._gl.TRIANGLE_STRIP, offset, vertexCount);
-  //   }
-  // }
+    this.uniformLocations = this._uniformsInfo.reduce((acc, uniform) => {
+      const location = this._gl.getUniformLocation(
+        this._shaderProgram,
+        uniform.name
+      );
+      if (location) {
+        acc[uniform.name] = location;
+      } else {
+        console.warn(`Uniform location for "${uniform.name}" not found.`);
+      }
+      return acc;
+    }, {} as { [key: string]: WebGLUniformLocation });
+  }
 
   public init(): void {
     this.initBuffers();
-    this.initShaders();
+    this._shaderProgram = this.initShaders();
+    this.setupUniformLocations();
+
+    const positionAttribLocation = this._gl.getAttribLocation(
+      this._shaderProgram,
+      "aVertexPosition"
+    );
+    this._gl.enableVertexAttribArray(positionAttribLocation);
+    this._gl.vertexAttribPointer(
+      positionAttribLocation,
+      2,
+      this._gl.FLOAT,
+      false,
+      0,
+      0
+    );
   }
 }
 

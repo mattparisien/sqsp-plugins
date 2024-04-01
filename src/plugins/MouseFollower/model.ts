@@ -5,7 +5,10 @@ import {
   MouseEventsService,
 } from "../_lib/services";
 import { EMouseEvent } from "../_lib/services/MouseEventsService";
-import WebGLService from "../_lib/services/WebGLService";
+import WebGLService, {
+  IAttributeData,
+  IUniformData,
+} from "../_lib/services/WebGLService";
 import { PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
@@ -34,14 +37,13 @@ class MouseFollower
   extends PluginBase<IMouseFollowerOptions>
   implements IMouseFollower
 {
-
   // #region Private members
 
-  private _webGlService : WebGLService | null = null;
+  private _webGlService: WebGLService | null = null;
   private _tickService: AnimationFrameService | null = null;
   private _mouseEventsService: MouseEventsService | null = null;
-  
-  private _ctx: RenderingContext| null = null;
+
+  private _ctx: RenderingContext | null = null;
   private _cnv: HTMLCanvasElement | null = null;
 
   // #endregion
@@ -49,7 +51,7 @@ class MouseFollower
   // #region Shader programs
 
   // Vertex shader program
-  private readonly _vsSource : string = `
+  private readonly _vsSource: string = `
       attribute vec4 aVertexPosition;
       void main(void) {
           gl_Position = aVertexPosition;
@@ -57,7 +59,7 @@ class MouseFollower
   `;
 
   // Fragment shader program
-  private readonly _fsSource : string = `
+  private readonly _fsSource: string = `
       precision mediump float;
       uniform vec2 uMousePosition;
       uniform vec2 uResolution;
@@ -95,8 +97,18 @@ class MouseFollower
     this.options = this.validateOptions(options);
     this.options._radius = this.options.radius;
 
-    this._webGlService       = new WebGLService(container, { vertex: this._vsSource, fragment: this._fsSource});
-    this._tickService        = new AnimationFrameService(this.onTick.bind(this));
+    this._webGlService = new WebGLService(
+      container,
+      {
+        vertex: this._vsSource,
+        fragment: this._fsSource,
+      },
+      [
+        { name: "uModelViewMatrix" },
+        { name: "uProjectionMatrix" },
+      ]
+    );
+    this._tickService = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
       {
         event: EMouseEvent.Move,
@@ -107,10 +119,9 @@ class MouseFollower
         handler: this.onMouseOut.bind(this),
       },
     ]);
-    
+
     this._ctx = this._webGlService.getContext();
     this._cnv = this._webGlService.getCanvas();
-
   }
 
   protected validateOptions(
@@ -133,29 +144,26 @@ class MouseFollower
   }
 
   draw() {
-    // this._canvasService.context.clearRect(
-    //   0,
-    //   0,
-    //   this._canvasService.context.canvas.width,
-    //   this._canvasService.context.canvas.height
-    // );
-    // this._canvasService.context.beginPath();
-    // this._canvasService.context.arc(
-    //   this.posX,
-    //   this.posY,
-    //   this.options.radius,
-    //   0,
-    //   2 * Math.PI
-    // );
+    this._webGlService.drawScene(this.getUniforms());
+  }
 
-    // switch (this.options.style) {
-    //   case "fill":
-    //     this.fill();
-    //     break;
-    //   case "outline":
-    //     this.stroke();
-    //     break;
-    // }
+  getUniforms(): IUniformData[] {
+    const rect = this._cnv.getBoundingClientRect();
+    const mouseXNormalized = (this.posX - rect.left) / this._cnv.width;
+    const mouseYNormalized = 1 - (this.posY - rect.top) / this._cnv.height; // WebGL's Y-axis is flipped
+
+    return [
+      {
+        name: "uResolution",
+        type: "2f",
+        value: [this._cnv.width, this._cnv.height],
+      },
+      {
+        name: "uMousePosition",
+        type: "2f",
+        value: [mouseXNormalized, mouseYNormalized],
+      },
+    ];
   }
 
   stroke() {
