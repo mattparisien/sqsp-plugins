@@ -1,14 +1,8 @@
 import gsap from "gsap";
-import {
-  AnimationFrameService,
-  CanvasService,
-  MouseEventsService,
-} from "../_lib/services";
+import * as THREE from "three";
+import { MouseEventsService } from "../_lib/services";
 import { EMouseEvent } from "../_lib/services/MouseEventsService";
-import WebGLService, {
-  IAttributeData,
-  IUniformData,
-} from "../_lib/services/WebGLService";
+import ShaderService, { TUniforms } from "../_lib/services/ShaderService";
 import { PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
@@ -33,18 +27,20 @@ interface IMouseFollower {
   lerp(start: number, end: number, amount: number): number;
 }
 
+interface IMouseFollowerUniforms {
+  uMousePosition: THREE.Vector2;
+  uResolution: THREE.Vector2;
+  uTime: number;
+}
+
 class MouseFollower
   extends PluginBase<IMouseFollowerOptions>
   implements IMouseFollower
 {
   // #region Private members
 
-  private _webGlService: WebGLService | null = null;
-  private _tickService: AnimationFrameService | null = null;
+  private _shaderService: ShaderService | null = null;
   private _mouseEventsService: MouseEventsService | null = null;
-
-  private _ctx: RenderingContext | null = null;
-  private _cnv: HTMLCanvasElement | null = null;
 
   // #endregion
 
@@ -70,10 +66,22 @@ class MouseFollower
           if (dist < radius) {
               gl_FragColor = vec4(1, 0, 0, 1); // Red circle
           } else {
-              gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black background
+              gl_FragColor = vec4(1.0, 0.2, 1.0, 0.3);
           }
       }
   `;
+
+  private _uniforms: TUniforms<IMouseFollowerUniforms> = {
+    uMousePosition: {
+      value: new THREE.Vector2(0, 0),
+    },
+    uResolution: {
+      value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+    },
+    uTime: {
+      value: 0,
+    },
+  };
 
   // #endregion
 
@@ -97,31 +105,24 @@ class MouseFollower
     this.options = this.validateOptions(options);
     this.options._radius = this.options.radius;
 
-    this._webGlService = new WebGLService(
+    this._shaderService = new ShaderService(
       container,
-      {
-        vertex: this._vsSource,
-        fragment: this._fsSource,
-      },
-      [
-        { name: "uModelViewMatrix" },
-        { name: "uProjectionMatrix" },
-      ]
+      this._vsSource,
+      this._fsSource,
+      this._uniforms,
+      this.onRender.bind(this),
+      this.onResize.bind(this)
     );
-    this._tickService = new AnimationFrameService(this.onTick.bind(this));
+    // this._tickService = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
       {
         event: EMouseEvent.Move,
-        handler: this.onMouseMove.bind(this),
       },
       {
         event: EMouseEvent.Out,
         handler: this.onMouseOut.bind(this),
       },
     ]);
-
-    this._ctx = this._webGlService.getContext();
-    this._cnv = this._webGlService.getCanvas();
   }
 
   protected validateOptions(
@@ -143,40 +144,6 @@ class MouseFollower
     return start * (1 - t) + end * t;
   }
 
-  draw() {
-    this._webGlService.drawScene(this.getUniforms());
-  }
-
-  getUniforms(): IUniformData[] {
-    const rect = this._cnv.getBoundingClientRect();
-    const mouseXNormalized = (this.posX - rect.left) / this._cnv.width;
-    const mouseYNormalized = 1 - (this.posY - rect.top) / this._cnv.height; // WebGL's Y-axis is flipped
-
-    return [
-      {
-        name: "uResolution",
-        type: "2f",
-        value: [this._cnv.width, this._cnv.height],
-      },
-      {
-        name: "uMousePosition",
-        type: "2f",
-        value: [mouseXNormalized, mouseYNormalized],
-      },
-    ];
-  }
-
-  stroke() {
-    // this._ctx.lineWidth = 1;
-    // this._ctx.strokeStyle = this.options.color;
-    // this._ctx.stroke();
-  }
-
-  fill() {
-    // this._ctx.fillStyle = this.options.color;
-    // this._ctx.fill();
-  }
-
   scaleIn() {
     if (this.options.radius !== this.options._radius) {
       // Only scale in if not already at original radius
@@ -196,7 +163,7 @@ class MouseFollower
     }
   }
 
-  onTick(): void {
+  onRender(uniforms: TUniforms<IMouseFollowerUniforms>): void {
     this.posX = this.lerp(
       this.posX,
       this._mouseEventsService.clientX,
@@ -207,14 +174,14 @@ class MouseFollower
       this._mouseEventsService.clientY,
       this.options.speed
     );
-    this.draw();
+
+    uniforms.uTime.value += 0.01;
+    uniforms.uMousePosition.value.set(this.posX, this.posY);
+    console.log(uniforms.uMousePosition.value);
   }
 
-  onMouseMove(event: MouseEvent): void {
-    if (this.options.radius === 0 && !this.isDisabled) {
-      this.scaleIn();
-      this.isDisabled = true;
-    }
+  onResize(uniforms: TUniforms<IMouseFollowerUniforms>): void {
+    uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
   }
 
   onMouseOut(event: MouseEvent): void {
@@ -238,12 +205,8 @@ class MouseFollower
   }
 
   init() {
-    this._tickService.init();
     this._mouseEventsService.init();
-    this._webGlService.init();
-
-    this.addListeners();
-    this.draw();
+    this._shaderService.init();
   }
 }
 

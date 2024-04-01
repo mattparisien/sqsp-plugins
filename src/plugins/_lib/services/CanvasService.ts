@@ -28,8 +28,8 @@ class CanvasService extends PluginService implements ICanvasService {
   }
 
   sizeCanvas() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    this.canvas.width = window.innerWidth * window.devicePixelRatio;
+    this.canvas.height = window.innerHeight * window.devicePixelRatio;
   }
 
   onResize() {
