@@ -5,6 +5,7 @@ import {
   MouseEventsService,
 } from "../_lib/services";
 import { EMouseEvent } from "../_lib/services/MouseEventsService";
+import WebGLService from "../_lib/services/WebGLService";
 import { PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
@@ -12,7 +13,11 @@ import PluginBase from "../_PluginBase/model";
 interface IMouseFollowerOptions {
   color: string;
   radius: number;
+  style: "outline" | "fill";
   speed: number;
+  skewing: number;
+  skewingDelta: number;
+  skewingDeltaMax: number;
 }
 
 interface IMouseFollower {
@@ -29,18 +34,59 @@ class MouseFollower
   extends PluginBase<IMouseFollowerOptions>
   implements IMouseFollower
 {
-  private _canvasService: CanvasService;
-  private _tickService: AnimationFrameService;
-  private _mouseEventsService: MouseEventsService;
+
+  // #region Private members
+
+  private _webGlService : WebGLService | null = null;
+  private _tickService: AnimationFrameService | null = null;
+  private _mouseEventsService: MouseEventsService | null = null;
+  
+  private _ctx: RenderingContext| null = null;
+  private _cnv: HTMLCanvasElement | null = null;
+
+  // #endregion
+
+  // #region Shader programs
+
+  // Vertex shader program
+  private readonly _vsSource : string = `
+      attribute vec4 aVertexPosition;
+      void main(void) {
+          gl_Position = aVertexPosition;
+      }
+  `;
+
+  // Fragment shader program
+  private readonly _fsSource : string = `
+      precision mediump float;
+      uniform vec2 uMousePosition;
+      uniform vec2 uResolution;
+      void main(void) {
+          float radius = 0.05; // Radius of the circle
+          vec2 coords = gl_FragCoord.xy / uResolution.xy;
+          float dist = distance(coords, uMousePosition);
+          if (dist < radius) {
+              gl_FragColor = vec4(1, 0, 0, 1); // Red circle
+          } else {
+              gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black background
+          }
+      }
+  `;
+
+  // #endregion
 
   posX = 0;
   posY = 0;
   isDisabled = false;
 
   options: PluginOptions<IMouseFollowerOptions> = {
-    color: "red",
+    color: "black",
     radius: 10,
-    speed: 0.1,
+    style: "fill",
+    speed: 0.01,
+    skewing: 0.0,
+    skewingDelta: 0.001,
+    skewingDeltaMax: 0.15,
   };
 
   constructor(container: any, options: PluginOptions<IMouseFollowerOptions>) {
@@ -49,35 +95,37 @@ class MouseFollower
     this.options = this.validateOptions(options);
     this.options._radius = this.options.radius;
 
-    this._canvasService = new CanvasService(
-      this.container as HTMLCanvasElement
-    );
-    this._tickService = new AnimationFrameService(this.onTick.bind(this));
+    this._webGlService       = new WebGLService(container, { vertex: this._vsSource, fragment: this._fsSource});
+    this._tickService        = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
       {
         event: EMouseEvent.Move,
         handler: this.onMouseMove.bind(this),
       },
       {
-        event: EMouseEvent.Enter,
-        handler: this.onMouseEnter.bind(this),
-      },
-      {
         event: EMouseEvent.Out,
         handler: this.onMouseOut.bind(this),
       },
     ]);
+    
+    this._ctx = this._webGlService.getContext();
+    this._cnv = this._webGlService.getCanvas();
+
   }
 
   protected validateOptions(
     options: PluginOptions<IMouseFollowerOptions>
   ): PluginOptions<IMouseFollowerOptions> {
-    return this.mergeOptions(options, this.options);
-  }
+    if (
+      options.style &&
+      options.style !== "fill" &&
+      options.style !== "outline"
+    ) {
+      options.style = null;
+      console.error(`Option value '${options.style}' is not a valid for style`);
+    }
 
-  resizeCanvas() {
-    this._canvasService.canvas.width = window.innerWidth;
-    this._canvasService.canvas.height = window.innerHeight;
+    return this.mergeOptions(options, this.options);
   }
 
   lerp(start, end, t) {
@@ -85,23 +133,40 @@ class MouseFollower
   }
 
   draw() {
-    this._canvasService.context.clearRect(
-      0,
-      0,
-      this._canvasService.context.canvas.width,
-      this._canvasService.context.canvas.height
-    );
-    this._canvasService.context.beginPath();
-    this._canvasService.context.arc(
-      this.posX,
-      this.posY,
-      this.options.radius,
-      0,
-      2 * Math.PI
-    );
-    this._canvasService.context.lineWidth = 5;
-    this._canvasService.context.fillStyle = this.options.color;
-    this._canvasService.context.fill();
+    // this._canvasService.context.clearRect(
+    //   0,
+    //   0,
+    //   this._canvasService.context.canvas.width,
+    //   this._canvasService.context.canvas.height
+    // );
+    // this._canvasService.context.beginPath();
+    // this._canvasService.context.arc(
+    //   this.posX,
+    //   this.posY,
+    //   this.options.radius,
+    //   0,
+    //   2 * Math.PI
+    // );
+
+    // switch (this.options.style) {
+    //   case "fill":
+    //     this.fill();
+    //     break;
+    //   case "outline":
+    //     this.stroke();
+    //     break;
+    // }
+  }
+
+  stroke() {
+    // this._ctx.lineWidth = 1;
+    // this._ctx.strokeStyle = this.options.color;
+    // this._ctx.stroke();
+  }
+
+  fill() {
+    // this._ctx.fillStyle = this.options.color;
+    // this._ctx.fill();
   }
 
   scaleIn() {
@@ -144,15 +209,12 @@ class MouseFollower
     }
   }
 
-  onMouseEnter(event: MouseEvent): void {}
-
   onMouseOut(event: MouseEvent): void {
     this.scaleOut();
     this.isDisabled = false;
   }
 
   addListeners() {
-    window.addEventListener("resize", this.resizeCanvas.bind(this));
     const links = DomUtils.querySelectorAll(["button", "a"]);
 
     links.forEach((link) => {
@@ -168,11 +230,10 @@ class MouseFollower
   }
 
   init() {
-    this._canvasService.init();
     this._tickService.init();
     this._mouseEventsService.init();
+    this._webGlService.init();
 
-    this.resizeCanvas();
     this.addListeners();
     this.draw();
   }
