@@ -3,19 +3,20 @@ import ThreeJsService from "./ThreeJsService"; // Assuming ThreeJsService is in 
 
 export type TUniforms<T> = { [P in keyof T]: { value: T[P] } };
 
+export type TCallback<T> = ({mesh, uniforms}: {mesh: THREE.Mesh, uniforms: TUniforms<T>, camera: THREE.PerspectiveCamera | THREE.OrthographicCamera, devicePixelRatio: number}) => any | null;
 
 class ShaderService<T = {}> extends ThreeJsService {
-  private _uniforms: TUniforms<T>;
-  private _onRenderCallback: (uniforms: TUniforms<T>) => any
-  private _onResizeCallback: (uniforms: TUniforms<T>) => any
+  private _uniforms: TUniforms<T> | null = null;
+  private _onRenderCallback: TCallback<T> = null;
+  private _onResizeCallback: TCallback<T> = null;
 
   constructor(
     container: HTMLElement,
     vertexShader: string,
     fragmentShader: string,
     uniforms: TUniforms<T>,
-    onRender: (uniforms: TUniforms<T>) => any,
-    onResize: (uniforms: TUniforms<T>) => any
+    onRender?: TCallback<T>,
+    onResize?: TCallback<T>
   ) {
     super(container); // Call the parent constructor
     this._uniforms = uniforms;
@@ -26,22 +27,23 @@ class ShaderService<T = {}> extends ThreeJsService {
       vertexShader,
       fragmentShader,
       uniforms,
+      transparent: true
     });
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const mesh = new THREE.Mesh(geometry, material);
+    this.geometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+    this.mesh = new THREE.Mesh(this.geometry, material);
 
-    this.scene.add(mesh);
+    this.scene.add(this.mesh);
   }
 
   protected render(): void {
-    this._onRenderCallback?.(this._uniforms);
     super.render();
+    this._onRenderCallback?.({mesh: this.mesh, uniforms: this._uniforms, camera: this.camera, devicePixelRatio: this.devicePixelRatio});
   }
 
   protected onWindowResize(): void {
-    this._onResizeCallback?.(this._uniforms)
     super.onWindowResize();
+    this._onResizeCallback?.({mesh: this.mesh, uniforms: this._uniforms, camera: this.camera, devicePixelRatio: this.devicePixelRatio})
   }
 
   init(): void {

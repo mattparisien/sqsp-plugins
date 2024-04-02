@@ -22,7 +22,6 @@ interface IMouseEventOption {
 }
 
 // Combine the interfaces using a union type to allow only one of the keys
-
 class MouseEventsService extends PluginService {
   private _prevClientX = 0; // Previous mouse X position
   private _prevClientY = 0; // Previous mouse Y position

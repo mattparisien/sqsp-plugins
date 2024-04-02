@@ -85,23 +85,13 @@ class MouseFollower
   }
 
   draw() {
-    this._canvasService.context.clearRect(
-      0,
-      0,
-      this._canvasService.context.canvas.width,
-      this._canvasService.context.canvas.height
-    );
-    this._canvasService.context.beginPath();
-    this._canvasService.context.arc(
-      this.posX,
-      this.posY,
-      this.options.radius,
-      0,
-      2 * Math.PI
-    );
-    this._canvasService.context.lineWidth = 5;
-    this._canvasService.context.fillStyle = this.options.color;
-    this._canvasService.context.fill();
+    const ctx = this._canvasService.context as CanvasRenderingContext2D;
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.beginPath();
+    ctx.arc(this.posX, this.posY, this.options.radius, 0, 2 * Math.PI);
+    ctx.lineWidth = 5;
+    ctx.fillStyle = this.options.color;
+    ctx.fill();
   }
 
   scaleIn() {

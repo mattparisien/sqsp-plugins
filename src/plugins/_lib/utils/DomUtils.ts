@@ -112,10 +112,10 @@ class DomUtils {
    * @param wrapperEl A string corresponding to the html element to use to wrap the element
    * @returns The wrapped element
    */
-  static wrapElement(element: HTMLElement, wrapperEl: string): HTMLElement {
-    if (!element || !wrapperEl || wrapperEl.trim() === "") return;
+  static wrapElement(element: HTMLElement, wrapperEl: string | HTMLElement): HTMLElement {
+    if (!element || !wrapperEl || (typeof wrapperEl === "string" && wrapperEl.trim() === "")) return;
 
-    const wrapper = document.createElement(wrapperEl);
+    const wrapper = wrapperEl instanceof HTMLElement ? wrapperEl : document.createElement(wrapperEl);
     wrapper.appendChild(element);
 
     return wrapper;
@@ -126,7 +126,7 @@ class DomUtils {
    * @param wrapperEl A string corresponding to the html element to use to wrap the elements
    * @returns The wrapped elements
    */
-  static wrapMany(elements: HTMLElement[], wrapperEl: string): HTMLElement[] {
+  static wrapMany(elements: HTMLElement[], wrapperEl: string | HTMLElement): HTMLElement[] {
     if (!elements || !elements.length) return;
 
     const wrappedElements = [];
