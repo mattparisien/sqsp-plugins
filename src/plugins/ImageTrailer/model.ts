@@ -4,6 +4,7 @@ import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { EAspectRatio, PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
+import gsap from "gsap";
 
 interface IImageTrailerptions {
   images: string[];
@@ -15,11 +16,13 @@ class ImageTrailer
   extends PluginBase<IImageTrailerptions>
   implements IImageTrailer
 {
-  private _mouseEventsService: MouseEventsService;
-  private _tickService: AnimationFrameService;
-  private _imageService: ImageService;
-  private _images: HTMLElement[];
+  private _mouseEventsService: MouseEventsService | null = null;
+  private _tickService: AnimationFrameService | null = null;
+  private _imageService: ImageService | null = null;
+  private _images: HTMLElement[] | null = null;
+  private _timelines: GSAPTimeline[] | null = null;
   private _currImageIdx: number = 0;
+
   private _imageSwitchTickerId: any = null;
   private _debounceTickerId: any = null;
 
@@ -67,28 +70,60 @@ class ImageTrailer
     return this.mergeOptions(options, this.options);
   }
 
-  lerp(start, end, t) {
+  lerp(start, end, t) : number {
     return start * (1 - t) + end * t;
   }
 
+  getPrevImageIdx(): number {
+    if (this._currImageIdx === 0) return this._images.length - 1;
+    else return this._currImageIdx - 1;
+  }
+
+  getNextImageIdx(): number {
+    if (this._currImageIdx < this._images.length - 1) return this._currImageIdx + 1;
+    else return 0;
+  }
+
   incrementCurrImageIdx(): void {
-    if (this._currImageIdx < this._images.length - 1) this._currImageIdx++;
-    else this._currImageIdx = 0;
+    this._currImageIdx = this.getNextImageIdx();
   }
 
   onMouseMove(event: MouseEvent): void {
-    clearTimeout(this._debounceTickerId);
+    if (this._debounceTickerId) clearTimeout(this._debounceTickerId);
 
     if (!this._imageSwitchTickerId) {
       this._imageSwitchTickerId = setInterval(() => {
-        this.incrementCurrImageIdx();
+        this.onImageSwitch();
       }, this._imageSwitchTickerTimeout);
     }
 
     this._debounceTickerId = setTimeout(() => {
-      clearInterval(this._imageSwitchTickerId);
-      this._imageSwitchTickerId = null;
+      this.onMouseMoveStop();
     }, this._debounceTickerTimeout);
+  }
+
+  onMouseMoveStop(): void {
+    clearInterval(this._imageSwitchTickerId);
+    this._imageSwitchTickerId = null;
+
+    clearTimeout(this._debounceTickerId);
+    this._debounceTickerId = null;
+  }
+
+  onImageSwitch(): void {
+    if (!this.isImageAnimating(this.getNextImageIdx())) {
+      this.incrementCurrImageIdx();
+      this.fadeOutImage(this.getPrevImageIdx());
+    }
+  }
+
+  isImageAnimating(imageIdx: number): boolean {
+    return this._timelines[imageIdx].isActive();
+  }
+
+  fadeOutImage(imageIdx: number): void {
+    const tl = this._timelines[imageIdx];
+    tl.restart(true, false);
   }
 
   onTick(): void {
@@ -113,17 +148,34 @@ class ImageTrailer
     this._images = wrappedImages;
   }
 
-  appendImages() {
+  appendImages() : void {
     DomUtils.appendMany(this.container, this._images);
   }
 
-  init() {
+  createTimeline(el: HTMLElement, onComplete?: gsap.Callback) {
+    const tl = gsap.timeline({ paused: true, onComplete });
+    tl.to(el, {
+      opacity: 0,
+      delay: 0.5,
+      duration: 1,
+      ease: "Linear.EaseNone",
+    });
+
+    return tl;
+  }
+
+  createTimelines() : void {
+    this._timelines = this._images.map((img) => this.createTimeline(img));
+  }
+
+  init() : void {
     this._mouseEventsService.init();
     this._imageService
       .init()
       .then((images) => {
         this.createImages(images);
         this.appendImages();
+        this.createTimelines();
         this._tickService.init();
       })
       .catch((err) => console.log(err));
