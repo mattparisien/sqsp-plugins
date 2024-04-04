@@ -25,7 +25,7 @@ const getPluginOptionsFromScript = (script: HTMLOrSVGScriptElement) => {
 };
 
 function getPluginConfig(pluginName: string): PluginConfiguration {
-  return pluginConfiguration.find((config) => config.name === pluginName);
+  return pluginConfiguration.find((config) => config.name.trim() === pluginName.trim());
 }
 
 function getContainersBySelector(

@@ -1,35 +1,33 @@
 @import "aspects";
 
 section.page-section[data-candlelight-plugin-image-trailer] {
-    width: 100%;
-    height: 100vh;
-    position: relative;
+  width: 100%;
+  height: 100vh;
+  position: relative;
 
-    .trailer-image {
-        width: 200px;
-        position: absolute;
-        pointer-events: none;
-        transform: translate(-50%, -50%);
+  .trailer-image {
+    width: 200px;
+    position: absolute;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
 
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
-    
-
+  }
 }
 
 @keyframes fade-out {
-    0% {
-        opacity: 1;
-    }
+  0% {
+    opacity: 1;
+  }
 
-    100% {
-        opacity: 0;
-    }
+  100% {
+    opacity: 0;
+  }
 }

@@ -4,13 +4,10 @@ import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { EAspectRatio, PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
-import gsap from "gsap";
 
-interface IImageTrailerptions {
+interface IImageTrailerOptions {
   images: string[];
 }
-
-interface IImageTrailer {}
 
 interface IImageData {
   node: HTMLDivElement;
@@ -18,30 +15,31 @@ interface IImageData {
     x: number;
     y: number;
   };
-  isActive: boolean;
+  velocity: {
+    x: number;
+    y: number;
+  };
+  opacity: number;
 }
 
-class ImageTrailer
-  extends PluginBase<IImageTrailerptions>
-  implements IImageTrailer
-{
+class ImageTrailer extends PluginBase<IImageTrailerOptions> {
   private _mouseEventsService: MouseEventsService | null = null;
   private _tickService: AnimationFrameService | null = null;
   private _imageService: ImageService | null = null;
-  private _timelines: GSAPTimeline[] | null = null;
   private _currImageIdx: number = 0;
   private _images: IImageData[] | null = null;
-  private _imageSwitchTickerId: any = null;
-  private _debounceTickerId: any = null;
+  private _imageSwitchTimerId: any = null;
+  private _mouseMoveDebounceTimerId: any = null;
 
-  private readonly _debounceTickerTimeout: number = 200;
-  private readonly _imageSwitchTickerTimeout: number = 100;
+  private _maxVelocity: number = 10;
+  private _fadeThreshold: number = 1.2; // Velocity threshold to start fading
+  private _minOpacity: number = 0.0; // Minimum opacity (fully transparent)
+  private _fadeRate: number = 0.08; // Rate at which the image fades out
 
   posX = 0;
   posY = 0;
-  isDisabled = false;
 
-  options: PluginOptions<IImageTrailerptions> = {
+  options: PluginOptions<IImageTrailerOptions> = {
     images: [
       "https://images.pexels.com/photos/11113558/pexels-photo-11113558.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
       "https://images.pexels.com/photos/20646979/pexels-photo-20646979/free-photo-of-small-world.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -52,29 +50,29 @@ class ImageTrailer
     ],
   };
 
-  constructor(container: any, options: PluginOptions<IImageTrailerptions>) {
+  constructor(container: any, options: PluginOptions<IImageTrailerOptions>) {
     super(container, "Image Trailer");
-
     this.options = this.validateOptions(options);
 
-    this._tickService = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
       {
         event: EMouseEvent.Move,
         handler: this.onMouseMove.bind(this),
       },
     ]);
+
     this._imageService = new ImageService(
-      this.options.images.map((x) => ({
-        src: x,
+      this.options.images.map((src) => ({
+        src,
         aspect: EAspectRatio.Portrait,
       }))
     );
+    this._tickService = new AnimationFrameService(this.onTick.bind(this));
   }
 
-  protected validateOptions(
-    options: PluginOptions<IImageTrailerptions>
-  ): PluginOptions<IImageTrailerptions> {
+  validateOptions(
+    options: PluginOptions<IImageTrailerOptions>
+  ): PluginOptions<IImageTrailerOptions> {
     return this.mergeOptions(options, this.options);
   }
 
@@ -82,153 +80,78 @@ class ImageTrailer
     return start * (1 - t) + end * t;
   }
 
-  getPrevImageIdx(): number {
-    if (this._currImageIdx === 0) return this._images.length - 1;
-    else return this._currImageIdx - 1;
-  }
+  onMouseMove(event: MouseEvent): void {
+    this.posX = event.clientX;
+    this.posY = event.clientY;
 
-  getNextImageIdx(): number {
-    if (this._currImageIdx < this._images.length - 1)
-      return this._currImageIdx + 1;
-    else return 0;
+    clearTimeout(this._mouseMoveDebounceTimerId);
+    this._mouseMoveDebounceTimerId = setTimeout(() => {
+      clearInterval(this._imageSwitchTimerId);
+      this._imageSwitchTimerId = null;
+    }, 200);
+
+    if (!this._imageSwitchTimerId) {
+      this._imageSwitchTimerId = setInterval(() => {
+        this.incrementCurrImageIdx();
+      }, 200);
+    }
   }
 
   incrementCurrImageIdx(): void {
-    this._currImageIdx = this.getNextImageIdx();
-  }
+    if (this._images) {
+      this._currImageIdx = (this._currImageIdx + 1) % this._images.length;
 
-  calculateTimeout(mouseSpeed): number {
-    // Ensure mouseSpeed is between 0 and 1
-    const minTimeout = 100; // Timeout in milliseconds at mouse speed 0
-    const maxTimeout = 1000; // Timeout in milliseconds at mouse speed 1
-
-    // Linearly interpolate the timeout between minTimeout and maxTimeout based on mouseSpeed
-    const timeout = maxTimeout - (maxTimeout - minTimeout) * mouseSpeed;
-
-    return timeout;
-  }
-
-  onMouseMove(event: MouseEvent): void {
-    if (this._debounceTickerId) clearTimeout(this._debounceTickerId);
-
-    if (!this._imageSwitchTickerId) {
-      this._imageSwitchTickerId = setInterval(() => {
-        this.onImageSwitch();
-      }, this._imageSwitchTickerTimeout);
+      // Reset the position and opacity for the new active image
+      this._images[this._currImageIdx].lastPos.x =
+        this.posX - this._images[this._currImageIdx].velocity.x;
+      this._images[this._currImageIdx].lastPos.y =
+        this.posY - this._images[this._currImageIdx].velocity.y;
+      this._images[this._currImageIdx].opacity = 1; // Ensure the image is fully opaque when it becomes active
     }
-
-    this._debounceTickerId = setTimeout(() => {
-      this.onMouseMoveStop();
-    }, this._debounceTickerTimeout);
-  }
-
-  onMouseMoveStop(): void {
-    clearInterval(this._imageSwitchTickerId);
-    this._imageSwitchTickerId = null;
-
-    clearTimeout(this._debounceTickerId);
-    this._debounceTickerId = null;
-
-    setTimeout(() => {
-      this._images[this._currImageIdx].isActive = false;
-    }, 600);
-  }
-
-  onImageSwitch(): void {
-    this.incrementCurrImageIdx();
-    this.updateStacking();
-    this._images[this.getPrevImageIdx()].isActive = false;
-    this._images[this._currImageIdx].isActive = true;
-  }
-
-  showImage(imageIdx: number): void {
-    // this._images[imageIdx].classList.add("fade-out");
-  }
-
-  hideImage(imageIdx: number) {
-    this.getImageNode(imageIdx).classList.remove("fade-out");
-  }
-
-  getCurrentImage(): HTMLElement {
-    return this.getImageNode(this._currImageIdx);
-  }
-
-  updateStacking(): void {
-    this._images.forEach((image, i) => {
-      if (i === this._currImageIdx) {
-        image.node.style.zIndex = this._images.length.toString();
-      } else {
-        image.node.style.zIndex = (this._images.length - 1).toString();
-      }
-    });
-  }
-
-  isImageAnimating(imageIdx: number): boolean {
-    return this._timelines[imageIdx].isActive();
-  }
-
-  fadeOutPrevImage(): void {
-    const tl = this._timelines[this.getPrevImageIdx()];
-    tl.restart();
-  }
-
-  getImageNode(imageIdx: number): HTMLDivElement {
-    return this._images[imageIdx].node;
   }
 
   onTick(): void {
-    const node = this.getCurrentImage();
-    this.posX = this.lerp(this.posX, this._mouseEventsService.clientX, 0.1);
-    this.posY = this.lerp(this.posY, this._mouseEventsService.clientY, 0.1);
+    if (!this._images) return;
 
-    node.style.left = this.posX + "px";
-    node.style.top = this.posY + "px";
-  }
+    this._images.forEach((image, index) => {
+      if (index === this._currImageIdx) {
+        // Active image logic to follow the mouse, similar to previous implementations
+        let desiredVelocityX = (this.posX - image.lastPos.x) * 0.1;
+        let desiredVelocityY = (this.posY - image.lastPos.y) * 0.1;
 
-  wrapImages(wrapperEl: string, images: HTMLElement[]): HTMLElement[] {
-    return DomUtils.wrapMany(images, wrapperEl);
-  }
+        image.velocity.x =
+          Math.sign(desiredVelocityX) *
+          Math.min(Math.abs(desiredVelocityX), this._maxVelocity);
+        image.velocity.y =
+          Math.sign(desiredVelocityY) *
+          Math.min(Math.abs(desiredVelocityY), this._maxVelocity);
 
-  createImages(images: IImageDetails[]): void {
-    const wrappedImages: IImageData[] = images.map((image) => {
-      const el = DomUtils.wrapElement(image.node, "div") as HTMLDivElement;
-      el.classList.add("trailer-image", `aspect-${image.aspect}`);
-      return {
-        node: el,
-        lastPos: {
-          x: 0,
-          y: 0,
-        },
-        isActive: false,
-      };
+        image.opacity = 1; // Ensure the current image is fully opaque
+      } else {
+        // Decrease velocity for non-active images
+        image.velocity.x *= 0.95;
+        image.velocity.y *= 0.95;
+
+        // Start fading if the velocity is below a certain threshold
+        if (
+          Math.abs(image.velocity.x) < this._fadeThreshold &&
+          Math.abs(image.velocity.y) < this._fadeThreshold
+        ) {
+          image.opacity = Math.max(
+            this._minOpacity,
+            image.opacity - this._fadeRate
+          );
+        }
+      }
+
+      // Update position and apply opacity
+      image.lastPos.x += image.velocity.x;
+      image.lastPos.y += image.velocity.y;
+
+      image.node.style.left = `${image.lastPos.x}px`;
+      image.node.style.top = `${image.lastPos.y}px`;
+      image.node.style.opacity = `${image.opacity}`;
     });
-
-    this._images = wrappedImages;
-  }
-
-  appendImages(): void {
-    DomUtils.appendMany(
-      this.container,
-      this._images.map((image) => image.node)
-    );
-  }
-
-  createTimeline(el: HTMLElement, onComplete?: gsap.Callback) {
-    const tl = gsap.timeline({ paused: true, onComplete });
-    tl.to(el, {
-      opacity: 0,
-      delay: 0.5,
-      duration: 1,
-      ease: "Linear.EaseNone",
-    });
-
-    return tl;
-  }
-
-  createTimelines(): void {
-    this._timelines = this._images.map((image) =>
-      this.createTimeline(image.node)
-    );
   }
 
   init(): void {
@@ -238,10 +161,35 @@ class ImageTrailer
       .then((images) => {
         this.createImages(images);
         this.appendImages();
-        this.createTimelines();
         this._tickService.init();
       })
       .catch((err) => console.log(err));
+  }
+
+  createImages(images: IImageDetails[]): void {
+    this._images = images.map((image) => {
+      const el = DomUtils.wrapElement(image.node, "div") as HTMLDivElement;
+      el.classList.add("trailer-image", `aspect-${image.aspect}`);
+      return {
+        node: el,
+        lastPos: {
+          x: this.posX,
+          y: this.posY,
+        },
+        velocity: {
+          x: 0,
+          y: 0,
+        },
+        opacity: 1,
+      };
+    });
+  }
+
+  appendImages(): void {
+    DomUtils.appendMany(
+      this.container,
+      this._images.map((image) => image.node)
+    );
   }
 }
 
