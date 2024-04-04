@@ -12,6 +12,15 @@ interface IImageTrailerptions {
 
 interface IImageTrailer {}
 
+interface IImageData {
+  node: HTMLDivElement;
+  lastPos: {
+    x: number;
+    y: number;
+  };
+  isActive: boolean;
+}
+
 class ImageTrailer
   extends PluginBase<IImageTrailerptions>
   implements IImageTrailer
@@ -19,10 +28,9 @@ class ImageTrailer
   private _mouseEventsService: MouseEventsService | null = null;
   private _tickService: AnimationFrameService | null = null;
   private _imageService: ImageService | null = null;
-  private _images: HTMLElement[] | null = null;
   private _timelines: GSAPTimeline[] | null = null;
   private _currImageIdx: number = 0;
-
+  private _images: IImageData[] | null = null;
   private _imageSwitchTickerId: any = null;
   private _debounceTickerId: any = null;
 
@@ -70,7 +78,7 @@ class ImageTrailer
     return this.mergeOptions(options, this.options);
   }
 
-  lerp(start, end, t) : number {
+  lerp(start, end, t): number {
     return start * (1 - t) + end * t;
   }
 
@@ -80,12 +88,24 @@ class ImageTrailer
   }
 
   getNextImageIdx(): number {
-    if (this._currImageIdx < this._images.length - 1) return this._currImageIdx + 1;
+    if (this._currImageIdx < this._images.length - 1)
+      return this._currImageIdx + 1;
     else return 0;
   }
 
   incrementCurrImageIdx(): void {
     this._currImageIdx = this.getNextImageIdx();
+  }
+
+  calculateTimeout(mouseSpeed): number {
+    // Ensure mouseSpeed is between 0 and 1
+    const minTimeout = 100; // Timeout in milliseconds at mouse speed 0
+    const maxTimeout = 1000; // Timeout in milliseconds at mouse speed 1
+
+    // Linearly interpolate the timeout between minTimeout and maxTimeout based on mouseSpeed
+    const timeout = maxTimeout - (maxTimeout - minTimeout) * mouseSpeed;
+
+    return timeout;
   }
 
   onMouseMove(event: MouseEvent): void {
@@ -108,30 +128,61 @@ class ImageTrailer
 
     clearTimeout(this._debounceTickerId);
     this._debounceTickerId = null;
+
+    setTimeout(() => {
+      this._images[this._currImageIdx].isActive = false;
+    }, 600);
   }
 
   onImageSwitch(): void {
-    if (!this.isImageAnimating(this.getNextImageIdx())) {
-      this.incrementCurrImageIdx();
-      this.fadeOutImage(this.getPrevImageIdx());
-    }
+    this.incrementCurrImageIdx();
+    this.updateStacking();
+    this._images[this.getPrevImageIdx()].isActive = false;
+    this._images[this._currImageIdx].isActive = true;
+  }
+
+  showImage(imageIdx: number): void {
+    // this._images[imageIdx].classList.add("fade-out");
+  }
+
+  hideImage(imageIdx: number) {
+    this.getImageNode(imageIdx).classList.remove("fade-out");
+  }
+
+  getCurrentImage(): HTMLElement {
+    return this.getImageNode(this._currImageIdx);
+  }
+
+  updateStacking(): void {
+    this._images.forEach((image, i) => {
+      if (i === this._currImageIdx) {
+        image.node.style.zIndex = this._images.length.toString();
+      } else {
+        image.node.style.zIndex = (this._images.length - 1).toString();
+      }
+    });
   }
 
   isImageAnimating(imageIdx: number): boolean {
     return this._timelines[imageIdx].isActive();
   }
 
-  fadeOutImage(imageIdx: number): void {
-    const tl = this._timelines[imageIdx];
-    tl.restart(true, false);
+  fadeOutPrevImage(): void {
+    const tl = this._timelines[this.getPrevImageIdx()];
+    tl.restart();
+  }
+
+  getImageNode(imageIdx: number): HTMLDivElement {
+    return this._images[imageIdx].node;
   }
 
   onTick(): void {
+    const node = this.getCurrentImage();
     this.posX = this.lerp(this.posX, this._mouseEventsService.clientX, 0.1);
     this.posY = this.lerp(this.posY, this._mouseEventsService.clientY, 0.1);
 
-    this._images[this._currImageIdx].style.left = this.posX + "px";
-    this._images[this._currImageIdx].style.top = this.posY + "px";
+    node.style.left = this.posX + "px";
+    node.style.top = this.posY + "px";
   }
 
   wrapImages(wrapperEl: string, images: HTMLElement[]): HTMLElement[] {
@@ -139,17 +190,27 @@ class ImageTrailer
   }
 
   createImages(images: IImageDetails[]): void {
-    const wrappedImages = images.map((image) => {
-      const el = DomUtils.wrapElement(image.node, "div");
+    const wrappedImages: IImageData[] = images.map((image) => {
+      const el = DomUtils.wrapElement(image.node, "div") as HTMLDivElement;
       el.classList.add("trailer-image", `aspect-${image.aspect}`);
-      return el;
+      return {
+        node: el,
+        lastPos: {
+          x: 0,
+          y: 0,
+        },
+        isActive: false,
+      };
     });
 
     this._images = wrappedImages;
   }
 
-  appendImages() : void {
-    DomUtils.appendMany(this.container, this._images);
+  appendImages(): void {
+    DomUtils.appendMany(
+      this.container,
+      this._images.map((image) => image.node)
+    );
   }
 
   createTimeline(el: HTMLElement, onComplete?: gsap.Callback) {
@@ -164,11 +225,13 @@ class ImageTrailer
     return tl;
   }
 
-  createTimelines() : void {
-    this._timelines = this._images.map((img) => this.createTimeline(img));
+  createTimelines(): void {
+    this._timelines = this._images.map((image) =>
+      this.createTimeline(image.node)
+    );
   }
 
-  init() : void {
+  init(): void {
     this._mouseEventsService.init();
     this._imageService
       .init()

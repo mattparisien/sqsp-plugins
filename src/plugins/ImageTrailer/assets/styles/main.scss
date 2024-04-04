@@ -20,4 +20,16 @@ section.page-section[data-candlelight-plugin-image-trailer] {
             left: 0;
         }
     }
+    
+
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
