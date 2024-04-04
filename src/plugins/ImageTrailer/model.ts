@@ -32,7 +32,7 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
   private _mouseMoveDebounceTimerId: any = null;
 
   private _maxVelocity: number = 10;
-  private _fadeThreshold: number = 2; // Velocity threshold to start fading
+  private _fadeThreshold: number = 1.2; // Velocity threshold to start fading
   private _minOpacity: number = 0.0; // Minimum opacity (fully transparent)
   private _fadeRate: number = 0.08; // Rate at which the image fades out
 
