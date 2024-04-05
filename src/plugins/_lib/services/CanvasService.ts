@@ -2,6 +2,11 @@ import PluginService from "./PluginService";
 
 type TCanvasContext = "2d" | "webgl";
 
+interface ICanvasOptions {
+  blendMode: "exclusion"
+}
+
+
 interface ICanvasService {
   canvas: HTMLCanvasElement;
   context: RenderingContext | null;
@@ -11,11 +16,14 @@ interface ICanvasService {
 class CanvasService extends PluginService implements ICanvasService {
   public canvas: HTMLCanvasElement;
   public context: RenderingContext | null = null;
+  public options: ICanvasOptions | null = null;
 
-  constructor(container: HTMLCanvasElement, context?: TCanvasContext) {
+  constructor(container: HTMLCanvasElement, context?: TCanvasContext, options?: ICanvasOptions) {
     super();
     this.canvas = container;
     this.context = this.canvas.getContext(context || "2d");
+    this.options = options;
+    this.canvas.style.mixBlendMode = options?.blendMode ?? "normal";
     this.addListeners();
   }
 

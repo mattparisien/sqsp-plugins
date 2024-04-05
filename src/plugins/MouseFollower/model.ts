@@ -6,6 +6,8 @@ import {
 } from "../_lib/services";
 import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { PluginOptions } from "../_lib/ts/types";
+import ArrayUtils from "../_lib/utils/ArrayUtils";
+import ColorUtils from "../_lib/utils/ColorUtils";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
 
@@ -13,7 +15,15 @@ interface IMouseFollowerOptions {
   color: string;
   radius: number;
   speed: number;
+  palette: string[];
 }
+
+type TRGBA = {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+};
 
 interface IMouseFollower {
   posX: number;
@@ -32,6 +42,10 @@ class MouseFollower
   private _canvasService: CanvasService;
   private _tickService: AnimationFrameService;
   private _mouseEventsService: MouseEventsService;
+  private _partyTimerId: any = null;
+  private _partyTimerMs: number = 500;
+
+  private _color: { r: number; g: number; b: number } | null = null;
 
   posX = 0;
   posY = 0;
@@ -39,8 +53,23 @@ class MouseFollower
 
   options: PluginOptions<IMouseFollowerOptions> = {
     color: "red",
-    radius: 10,
+    radius: 20,
     speed: 0.1,
+    palette: ArrayUtils.shuffle([
+      "#61833C",
+      "#DC8D82",
+      "#B32C2A",
+      "#DC969E",
+      "#CFCDC4",
+      "#507941",
+      "#CC7A3B",
+      "#7092AD",
+      "#AF6530",
+      "#F2AC0A",
+      "#F3D5B6",
+      "#B0A336",
+      "#AD9AB0",
+    ]),
   };
 
   constructor(container: any, options: PluginOptions<IMouseFollowerOptions>) {
@@ -50,7 +79,11 @@ class MouseFollower
     this.options._radius = this.options.radius;
 
     this._canvasService = new CanvasService(
-      this.container as HTMLCanvasElement
+      this.container as HTMLCanvasElement,
+      "2d",
+      {
+        blendMode: "exclusion",
+      }
     );
     this._tickService = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
@@ -61,10 +94,6 @@ class MouseFollower
       {
         event: EMouseEvent.Enter,
         handler: this.onMouseEnter.bind(this),
-      },
-      {
-        event: EMouseEvent.Out,
-        handler: this.onMouseOut.bind(this),
       },
     ]);
   }
@@ -90,7 +119,7 @@ class MouseFollower
     ctx.beginPath();
     ctx.arc(this.posX, this.posY, this.options.radius, 0, 2 * Math.PI);
     ctx.lineWidth = 5;
-    ctx.fillStyle = this.options.color;
+    ctx.fillStyle = `rgb(${this._color.r}, ${this._color.g}, ${this._color.b})`;
     ctx.fill();
   }
 
@@ -127,7 +156,42 @@ class MouseFollower
     this.draw();
   }
 
+  updateColor() {
+    // Ensure there's a palette to choose from
+    if (!this.options.palette || !this.options.palette.length) return;
+
+    // Select a random color from the palette
+    const newColorHex =
+      this.options.palette[
+        Math.floor(Math.random() * this.options.palette.length)
+      ];
+    const newColorRgb = ColorUtils.hexToRgb(newColorHex);
+
+    // Use GSAP to transition the current color to the new color
+    gsap.to(this._color, {
+      r: newColorRgb.r,
+      g: newColorRgb.g,
+      b: newColorRgb.b,
+      duration: 0.5, // Duration of the color transition
+      onUpdate: () => {
+        // Update the canvas or element with the new color
+        // this.options.color = `rgb(${this._color.r}, ${this._color.g}, ${this._color.b})`;
+        this.draw(); // Redraw or update the element with the new color
+      },
+    });
+  }
+
+  initPartyTimer() {
+    this._partyTimerId = setInterval(() => {
+      this.updateColor();
+    }, this._partyTimerMs);
+  }
+
   onMouseMove(event: MouseEvent): void {
+    if (!this._partyTimerId) {
+      this.initPartyTimer();
+    }
+
     if (this.options.radius === 0 && !this.isDisabled) {
       this.scaleIn();
       this.isDisabled = true;
@@ -137,27 +201,16 @@ class MouseFollower
   onMouseEnter(event: MouseEvent): void {}
 
   onMouseOut(event: MouseEvent): void {
-    this.scaleOut();
+    // this.scaleOut();
     this.isDisabled = false;
   }
 
   addListeners() {
     window.addEventListener("resize", this.resizeCanvas.bind(this));
-    const links = DomUtils.querySelectorAll(["button", "a"]);
-
-    links.forEach((link) => {
-      link.addEventListener("mouseenter", (e) => {
-        this.isDisabled = true;
-        this.scaleOut();
-      });
-      link.addEventListener("mouseleave", (e) => {
-        this.isDisabled = false;
-        this.scaleIn();
-      });
-    });
   }
 
   init() {
+    this._color = ColorUtils.hexToRgb(this.options.color);
     this._canvasService.init();
     this._tickService.init();
     this._mouseEventsService.init();
