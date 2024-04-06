@@ -10,9 +10,8 @@ import StringUtils from "../_lib/utils/StringUtils";
 interface IImageTrailerptions {
   images: string[];
   crop?: EAspectRatio;
+  maxWidth?: number;
 }
-
-interface IImageTrailer {}
 
 interface IImageData {
   node: HTMLDivElement;
@@ -23,25 +22,29 @@ interface IImageData {
   isActive: boolean;
 }
 
-class ImageTrailer
-  extends PluginBase<IImageTrailerptions>
-  implements IImageTrailer
-{
+class ImageTrailer extends PluginBase<IImageTrailerptions> {
   private _mouseEventsService: MouseEventsService | null = null;
   private _tickService: AnimationFrameService | null = null;
   private _imageService: ImageService | null = null;
   private _timelines: GSAPTimeline[] | null = null;
   private _currImageIdx: number = 0;
-  private _speed: number = 0.1;
-  private _crop: EAspectRatio = EAspectRatio["Square"];
+  private _speed: number = 1;
+  private _crop: EAspectRatio | null = EAspectRatio.Landscape;
+  private _maxWidth: number = 240;
 
   private _lastMouseX: number = 0;
   private _lastMouseY: number = 0;
   private readonly _mouseMoveThreshold: number = 50;
 
   private _imageData: IImageData[] | null = null;
-  private _imageSwitchTickerId: any = null;
   private _debounceTickerId: any = null;
+  private readonly _debounceTickerTimeout: number = 100;
+
+  posX = 0;
+  posY = 0;
+  isDisabled = false;
+
+  allowedOptions: (keyof IImageTrailerptions)[] = ["images"];
 
   private _images: string[] = [
     "https://images.pexels.com/photos/17022636/pexels-photo-17022636/free-photo-of-redhead-with-freckles-wearing-makeup.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -53,15 +56,6 @@ class ImageTrailer
     "https://images.pexels.com/photos/20788940/pexels-photo-20788940/free-photo-of-the-cover-of-the-album-the-girl-in-the-red-dress.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/20144127/pexels-photo-20144127/free-photo-of-two-peacocks-standing-in-front-of-a-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
   ];
-
-  private readonly _debounceTickerTimeout: number = 100;
-  private readonly _imageSwitchTickerTimeout: number = 100;
-
-  posX = 0;
-  posY = 0;
-  isDisabled = false;
-
-  allowedOptions: (keyof IImageTrailerptions)[] = ["images"];
 
   constructor(container: any, options: PluginOptions<IImageTrailerptions>) {
     super(container, "Image Trailer");
@@ -215,7 +209,8 @@ class ImageTrailer
   createImages(images: IImageDetails[]): void {
     const wrappedImages: IImageData[] = images.map((image) => {
       const el = DomUtils.wrapElement(image.node, "div") as HTMLDivElement;
-      el.classList.add("trailer-image", `aspect-${image.aspect}`);
+      el.classList.add("trailer-image", `aspect-${this._crop || "intrinsic"}`);
+      el.style.maxWidth = this._maxWidth + "px";
       return {
         node: el,
         lastPos: {
