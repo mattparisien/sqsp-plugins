@@ -20,7 +20,11 @@ interface IImageData {
     x: number;
     y: number;
   };
-  isActive: boolean;
+  velocity: {
+    x: number;
+    y: number;
+  };
+  opacity: number;
 }
 
 class ImageTrailer
@@ -32,11 +36,18 @@ class ImageTrailer
   private _imageService: ImageService | null = null;
   private _timelines: GSAPTimeline[] | null = null;
   private _currImageIdx: number = 0;
-  private _speed: number = 0.1;
   private _crop: EAspectRatio = EAspectRatio["Square"];
 
   private _lastMouseX: number = 0;
   private _lastMouseY: number = 0;
+  private _posX: number = 0;
+  private _posY: number = 0;
+
+  private _maxVelocity: number = 10;
+  private _fadeThreshold: number = 0.45; // Velocity threshold to start fading
+  private _minOpacity: number = 0.0; // Minimum opacity (fully transparent)
+  private _fadeRate: number = 0.08; // Rate at which the image fades out
+
   private readonly _mouseMoveThreshold: number = 50;
 
   private _imageData: IImageData[] | null = null;
@@ -55,10 +66,7 @@ class ImageTrailer
   ];
 
   private readonly _debounceTickerTimeout: number = 100;
-  private readonly _imageSwitchTickerTimeout: number = 100;
 
-  posX = 0;
-  posY = 0;
   isDisabled = false;
 
   allowedOptions: (keyof IImageTrailerptions)[] = ["images"];
@@ -111,7 +119,16 @@ class ImageTrailer
   }
 
   incrementCurrImageIdx(): void {
-    this._currImageIdx = this.getNextImageIdx();
+    if (this._images) {
+      this._currImageIdx = (this._currImageIdx + 1) % this._images.length;
+
+      // Reset the position and opacity for the new active image
+      this._imageData[this._currImageIdx].lastPos.x =
+        this._posX - this._imageData[this._currImageIdx].velocity.x;
+      this._imageData[this._currImageIdx].lastPos.y =
+        this._posY - this._imageData[this._currImageIdx].velocity.y;
+      this._imageData[this._currImageIdx].opacity = 1; // Ensure the image is fully opaque when it becomes active
+    }
   }
 
   calculateTimeout(mouseSpeed): number {
@@ -126,15 +143,19 @@ class ImageTrailer
   }
 
   onMouseMove(event: MouseEvent): void {
+    const { left, top } = this.getContainerBounds();
+    this._posX = event.clientX - left;
+    this._posY = event.clientY - top;
+
     const mouseDistanceMoved = Math.sqrt(
-      Math.pow(event.clientX - this._lastMouseX, 2) +
-        Math.pow(event.clientY - this._lastMouseY, 2)
+      Math.pow(this._posX - this._lastMouseX, 2) +
+        Math.pow(this._posY - this._lastMouseY, 2)
     );
 
     if (mouseDistanceMoved > this._mouseMoveThreshold) {
       this.onImageSwitch();
-      this._lastMouseX = event.clientX;
-      this._lastMouseY = event.clientY;
+      this._lastMouseX = this._posX;
+      this._lastMouseY = this._posY;
     }
 
     // Debounce logic to detect when mouse movement stops, if needed
@@ -152,8 +173,8 @@ class ImageTrailer
   onImageSwitch(): void {
     this.incrementCurrImageIdx();
     this.updateStacking();
-    this._imageData[this.getPrevImageIdx()].isActive = false;
-    this._imageData[this._currImageIdx].isActive = true;
+    // this._imageData[this.getPrevImageIdx()].isActive = false;
+    // this._imageData[this._currImageIdx].isActive = true;
   }
 
   showImage(imageIdx: number): void {
@@ -196,16 +217,47 @@ class ImageTrailer
   }
 
   onTick(): void {
-    const { left, top } = this.getContainerBounds();
-    const x = this._mouseEventsService.clientX - left;
-    const y = this._mouseEventsService.clientY - top;
+    if (!this._images) return;
 
-    const node = this.getCurrentImage();
-    this.posX = this.lerp(this.posX, x, this._speed);
-    this.posY = this.lerp(this.posY, y, this._speed);
+    this._imageData.forEach((image, index) => {
+      if (index === this._currImageIdx) {
+        // Active image logic to follow the mouse, similar to previous implementations
+        let desiredVelocityX = (this._posX - image.lastPos.x) * 0.1;
+        let desiredVelocityY = (this._posY - image.lastPos.y) * 0.1;
 
-    node.style.left = this.posX + "px";
-    node.style.top = this.posY + "px";
+        image.velocity.x =
+          Math.sign(desiredVelocityX) *
+          Math.min(Math.abs(desiredVelocityX), this._maxVelocity);
+        image.velocity.y =
+          Math.sign(desiredVelocityY) *
+          Math.min(Math.abs(desiredVelocityY), this._maxVelocity);
+
+        image.opacity = 1; // Ensure the current image is fully opaque
+      } else {
+        // Decrease velocity for non-active images
+        image.velocity.x *= 0.95;
+        image.velocity.y *= 0.95;
+
+        // Start fading if the velocity is below a certain threshold
+        if (
+          Math.abs(image.velocity.x) < this._fadeThreshold &&
+          Math.abs(image.velocity.y) < this._fadeThreshold
+        ) {
+          image.opacity = Math.max(
+            this._minOpacity,
+            image.opacity - this._fadeRate
+          );
+        }
+      }
+
+      // Update position and apply opacity
+      image.lastPos.x += image.velocity.x;
+      image.lastPos.y += image.velocity.y;
+
+      image.node.style.left = `${image.lastPos.x}px`;
+      image.node.style.top = `${image.lastPos.y}px`;
+      image.node.style.opacity = `${image.opacity}`;
+    });
   }
 
   wrapImages(wrapperEl: string, images: HTMLElement[]): HTMLElement[] {
@@ -222,7 +274,11 @@ class ImageTrailer
           x: 0,
           y: 0,
         },
-        isActive: false,
+        velocity: {
+          x: 0,
+          y: 0,
+        },
+        opacity: 1,
       };
     });
 
