@@ -17,6 +17,8 @@ class MagneticButton extends PluginBase<IMagneticButtonOptions> {
     strength: 100,
   };
 
+  allowedOptions = []
+
   constructor(container: any, options: PluginOptions<IMagneticButtonOptions>) {
     super(container, "Magnetic Button");
 

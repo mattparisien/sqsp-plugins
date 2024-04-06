@@ -3,9 +3,8 @@ import PluginService from "./PluginService";
 type TCanvasContext = "2d" | "webgl";
 
 interface ICanvasOptions {
-  blendMode: "exclusion"
+  blendMode: "exclusion";
 }
-
 
 interface ICanvasService {
   canvas: HTMLCanvasElement;
@@ -18,7 +17,13 @@ class CanvasService extends PluginService implements ICanvasService {
   public context: RenderingContext | null = null;
   public options: ICanvasOptions | null = null;
 
-  constructor(container: HTMLCanvasElement, context?: TCanvasContext, options?: ICanvasOptions) {
+  private _devicePixelRatio : number = window.devicePixelRatio || 1;
+
+  constructor(
+    container: HTMLCanvasElement,
+    context?: TCanvasContext,
+    options?: ICanvasOptions
+  ) {
     super();
     this.canvas = container;
     this.context = this.canvas.getContext(context || "2d");
@@ -36,6 +41,8 @@ class CanvasService extends PluginService implements ICanvasService {
   }
 
   sizeCanvas() {
+    this.canvas.style.width = window.innerWidth + "px";
+    this.canvas.style.height = window.innerHeight + "px";
     this.canvas.width = window.innerWidth * window.devicePixelRatio;
     this.canvas.height = window.innerHeight * window.devicePixelRatio;
   }

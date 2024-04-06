@@ -4,10 +4,15 @@ import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { EAspectRatio, PluginOptions } from "../_lib/ts/types";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
+import gsap from "gsap";
+import StringUtils from "../_lib/utils/StringUtils";
 
-interface IImageTrailerOptions {
+interface IImageTrailerptions {
   images: string[];
+  crop?: EAspectRatio;
 }
+
+interface IImageTrailer {}
 
 interface IImageData {
   node: HTMLDivElement;
@@ -15,143 +20,238 @@ interface IImageData {
     x: number;
     y: number;
   };
-  velocity: {
-    x: number;
-    y: number;
-  };
-  opacity: number;
+  isActive: boolean;
 }
 
-class ImageTrailer extends PluginBase<IImageTrailerOptions> {
+class ImageTrailer
+  extends PluginBase<IImageTrailerptions>
+  implements IImageTrailer
+{
   private _mouseEventsService: MouseEventsService | null = null;
   private _tickService: AnimationFrameService | null = null;
   private _imageService: ImageService | null = null;
+  private _timelines: GSAPTimeline[] | null = null;
   private _currImageIdx: number = 0;
-  private _images: IImageData[] | null = null;
-  private _imageSwitchTimerId: any = null;
-  private _mouseMoveDebounceTimerId: any = null;
+  private _speed: number = 0.1;
+  private _crop: EAspectRatio = EAspectRatio["Square"];
 
-  private _maxVelocity: number = 10;
-  private _fadeThreshold: number = 1.2; // Velocity threshold to start fading
-  private _minOpacity: number = 0.0; // Minimum opacity (fully transparent)
-  private _fadeRate: number = 0.08; // Rate at which the image fades out
+  private _lastMouseX: number = 0;
+  private _lastMouseY: number = 0;
+  private readonly _mouseMoveThreshold: number = 50;
+
+  private _imageData: IImageData[] | null = null;
+  private _imageSwitchTickerId: any = null;
+  private _debounceTickerId: any = null;
+
+  private _images: string[] = [
+    "https://images.pexels.com/photos/17022636/pexels-photo-17022636/free-photo-of-redhead-with-freckles-wearing-makeup.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/5221588/pexels-photo-5221588.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/14774843/pexels-photo-14774843.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/20766853/pexels-photo-20766853/free-photo-of-the-cathedral-of-florence-italy.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/18669641/pexels-photo-18669641/free-photo-of-a-boat-on-the-canal-grande-in-venice-italy.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/20837398/pexels-photo-20837398/free-photo-of-a-woman-in-a-coat-and-dress-is-posing-for-a-photo.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/20788940/pexels-photo-20788940/free-photo-of-the-cover-of-the-album-the-girl-in-the-red-dress.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://images.pexels.com/photos/20144127/pexels-photo-20144127/free-photo-of-two-peacocks-standing-in-front-of-a-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  ];
+
+  private readonly _debounceTickerTimeout: number = 100;
+  private readonly _imageSwitchTickerTimeout: number = 100;
 
   posX = 0;
   posY = 0;
+  isDisabled = false;
 
-  options: PluginOptions<IImageTrailerOptions> = {
-    images: [
-      "https://images.pexels.com/photos/11113558/pexels-photo-11113558.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/20646979/pexels-photo-20646979/free-photo-of-small-world.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/19759721/pexels-photo-19759721/free-photo-of-beautiful-girl-enjoying-blooming-red-hydrangeas-flowers-in-garden.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/20359830/pexels-photo-20359830/free-photo-of-a-man-in-a-grey-turtleneck-and-black-pants.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/20780446/pexels-photo-20780446/free-photo-of-a-woman-in-a-denim-shirt-is-playing-with-a-ball.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "https://images.pexels.com/photos/18254876/pexels-photo-18254876/free-photo-of-waves-by-the-rocky-beach.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    ],
-  };
+  allowedOptions: (keyof IImageTrailerptions)[] = ["images"];
 
-  constructor(container: any, options: PluginOptions<IImageTrailerOptions>) {
+  constructor(container: any, options: PluginOptions<IImageTrailerptions>) {
     super(container, "Image Trailer");
-    this.options = this.validateOptions(options);
 
+    this.validateOptions(options);
+
+    this._tickService = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
       {
         event: EMouseEvent.Move,
         handler: this.onMouseMove.bind(this),
       },
     ]);
-
     this._imageService = new ImageService(
-      this.options.images.map((src) => ({
-        src,
-        aspect: EAspectRatio.Portrait,
+      this._images.map((x) => ({
+        src: x,
+        aspect: this._crop,
       }))
     );
-    this._tickService = new AnimationFrameService(this.onTick.bind(this));
   }
 
-  validateOptions(
-    options: PluginOptions<IImageTrailerOptions>
-  ): PluginOptions<IImageTrailerOptions> {
-    return this.mergeOptions(options, this.options);
+  protected validateOptions(options: PluginOptions<IImageTrailerptions>): void {
+    if (options._crop) {
+      const pascal = StringUtils.toPascalCase(options._crop);
+
+      if (Object.keys(EAspectRatio).includes(pascal)) {
+        options.crop = EAspectRatio[pascal];
+      }
+    }
+
+    return this.setOptions(options);
   }
 
   lerp(start, end, t): number {
     return start * (1 - t) + end * t;
   }
 
-  onMouseMove(event: MouseEvent): void {
-    this.posX = event.clientX;
-    this.posY = event.clientY;
+  getPrevImageIdx(): number {
+    if (this._currImageIdx === 0) return this._imageData.length - 1;
+    else return this._currImageIdx - 1;
+  }
 
-    clearTimeout(this._mouseMoveDebounceTimerId);
-    this._mouseMoveDebounceTimerId = setTimeout(() => {
-      clearInterval(this._imageSwitchTimerId);
-      this._imageSwitchTimerId = null;
-    }, 200);
-
-    if (!this._imageSwitchTimerId) {
-      this._imageSwitchTimerId = setInterval(() => {
-        this.incrementCurrImageIdx();
-      }, 200);
-    }
+  getNextImageIdx(): number {
+    if (this._currImageIdx < this._imageData.length - 1)
+      return this._currImageIdx + 1;
+    else return 0;
   }
 
   incrementCurrImageIdx(): void {
-    if (this._images) {
-      this._currImageIdx = (this._currImageIdx + 1) % this._images.length;
+    this._currImageIdx = this.getNextImageIdx();
+  }
 
-      // Reset the position and opacity for the new active image
-      this._images[this._currImageIdx].lastPos.x =
-        this.posX - this._images[this._currImageIdx].velocity.x;
-      this._images[this._currImageIdx].lastPos.y =
-        this.posY - this._images[this._currImageIdx].velocity.y;
-      this._images[this._currImageIdx].opacity = 1; // Ensure the image is fully opaque when it becomes active
+  calculateTimeout(mouseSpeed): number {
+    // Ensure mouseSpeed is between 0 and 1
+    const minTimeout = 100; // Timeout in milliseconds at mouse speed 0
+    const maxTimeout = 1000; // Timeout in milliseconds at mouse speed 1
+
+    // Linearly interpolate the timeout between minTimeout and maxTimeout based on mouseSpeed
+    const timeout = maxTimeout - (maxTimeout - minTimeout) * mouseSpeed;
+
+    return timeout;
+  }
+
+  onMouseMove(event: MouseEvent): void {
+    const mouseDistanceMoved = Math.sqrt(
+      Math.pow(event.clientX - this._lastMouseX, 2) +
+        Math.pow(event.clientY - this._lastMouseY, 2)
+    );
+
+    if (mouseDistanceMoved > this._mouseMoveThreshold) {
+      this.onImageSwitch();
+      this._lastMouseX = event.clientX;
+      this._lastMouseY = event.clientY;
     }
+
+    // Debounce logic to detect when mouse movement stops, if needed
+    if (this._debounceTickerId) clearTimeout(this._debounceTickerId);
+    this._debounceTickerId = setTimeout(() => {
+      this.onMouseMoveStop();
+    }, this._debounceTickerTimeout);
+  }
+
+  onMouseMoveStop(): void {
+    clearTimeout(this._debounceTickerId);
+    this._debounceTickerId = null;
+  }
+
+  onImageSwitch(): void {
+    this.incrementCurrImageIdx();
+    this.updateStacking();
+    this._imageData[this.getPrevImageIdx()].isActive = false;
+    this._imageData[this._currImageIdx].isActive = true;
+  }
+
+  showImage(imageIdx: number): void {
+    // this._images[imageIdx].classList.add("fade-out");
+  }
+
+  hideImage(imageIdx: number) {
+    this.getImageNode(imageIdx).classList.remove("fade-out");
+  }
+
+  getCurrentImage(): HTMLElement {
+    return this.getImageNode(this._currImageIdx);
+  }
+
+  updateStacking(): void {
+    this._imageData.forEach((image, i) => {
+      if (i === this._currImageIdx) {
+        image.node.style.zIndex = this._imageData.length.toString();
+      } else {
+        image.node.style.zIndex = (this._imageData.length - 1).toString();
+      }
+    });
+  }
+
+  isImageAnimating(imageIdx: number): boolean {
+    return this._timelines[imageIdx].isActive();
+  }
+
+  fadeOutPrevImage(): void {
+    const tl = this._timelines[this.getPrevImageIdx()];
+    tl.restart();
+  }
+
+  getImageNode(imageIdx: number): HTMLDivElement {
+    return this._imageData[imageIdx].node;
+  }
+
+  getContainerBounds() {
+    return this.container.getBoundingClientRect();
   }
 
   onTick(): void {
-    if (!this._images) return;
+    const { left, top } = this.getContainerBounds();
+    const x = this._mouseEventsService.clientX - left;
+    const y = this._mouseEventsService.clientY - top;
 
-    this._images.forEach((image, index) => {
-      if (index === this._currImageIdx) {
-        // Active image logic to follow the mouse, similar to previous implementations
-        let desiredVelocityX = (this.posX - image.lastPos.x) * 0.1;
-        let desiredVelocityY = (this.posY - image.lastPos.y) * 0.1;
+    const node = this.getCurrentImage();
+    this.posX = this.lerp(this.posX, x, this._speed);
+    this.posY = this.lerp(this.posY, y, this._speed);
 
-        image.velocity.x =
-          Math.sign(desiredVelocityX) *
-          Math.min(Math.abs(desiredVelocityX), this._maxVelocity);
-        image.velocity.y =
-          Math.sign(desiredVelocityY) *
-          Math.min(Math.abs(desiredVelocityY), this._maxVelocity);
+    node.style.left = this.posX + "px";
+    node.style.top = this.posY + "px";
+  }
 
-        image.opacity = 1; // Ensure the current image is fully opaque
-      } else {
-        // Decrease velocity for non-active images
-        image.velocity.x *= 0.95;
-        image.velocity.y *= 0.95;
+  wrapImages(wrapperEl: string, images: HTMLElement[]): HTMLElement[] {
+    return DomUtils.wrapMany(images, wrapperEl);
+  }
 
-        // Start fading if the velocity is below a certain threshold
-        if (
-          Math.abs(image.velocity.x) < this._fadeThreshold &&
-          Math.abs(image.velocity.y) < this._fadeThreshold
-        ) {
-          image.opacity = Math.max(
-            this._minOpacity,
-            image.opacity - this._fadeRate
-          );
-        }
-      }
-
-      // Update position and apply opacity
-      image.lastPos.x += image.velocity.x;
-      image.lastPos.y += image.velocity.y;
-
-      image.node.style.left = `${image.lastPos.x}px`;
-      image.node.style.top = `${image.lastPos.y}px`;
-      image.node.style.opacity = `${image.opacity}`;
+  createImages(images: IImageDetails[]): void {
+    const wrappedImages: IImageData[] = images.map((image) => {
+      const el = DomUtils.wrapElement(image.node, "div") as HTMLDivElement;
+      el.classList.add("trailer-image", `aspect-${image.aspect}`);
+      return {
+        node: el,
+        lastPos: {
+          x: 0,
+          y: 0,
+        },
+        isActive: false,
+      };
     });
+
+    this._imageData = wrappedImages;
+  }
+
+  appendImages(): void {
+    DomUtils.appendMany(
+      this.container,
+      this._imageData.map((image) => image.node)
+    );
+  }
+
+  createTimeline(el: HTMLElement, onComplete?: gsap.Callback) {
+    const tl = gsap.timeline({ paused: true, onComplete });
+    tl.to(el, {
+      opacity: 0,
+      delay: 0.5,
+      duration: 1,
+      ease: "Linear.EaseNone",
+    });
+
+    return tl;
+  }
+
+  createTimelines(): void {
+    this._timelines = this._imageData.map((image) =>
+      this.createTimeline(image.node)
+    );
   }
 
   init(): void {
@@ -161,35 +261,10 @@ class ImageTrailer extends PluginBase<IImageTrailerOptions> {
       .then((images) => {
         this.createImages(images);
         this.appendImages();
+        this.createTimelines();
         this._tickService.init();
       })
       .catch((err) => console.log(err));
-  }
-
-  createImages(images: IImageDetails[]): void {
-    this._images = images.map((image) => {
-      const el = DomUtils.wrapElement(image.node, "div") as HTMLDivElement;
-      el.classList.add("trailer-image", `aspect-${image.aspect}`);
-      return {
-        node: el,
-        lastPos: {
-          x: this.posX,
-          y: this.posY,
-        },
-        velocity: {
-          x: 0,
-          y: 0,
-        },
-        opacity: 1,
-      };
-    });
-  }
-
-  appendImages(): void {
-    DomUtils.appendMany(
-      this.container,
-      this._images.map((image) => image.node)
-    );
   }
 }
 

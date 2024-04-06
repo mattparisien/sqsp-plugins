@@ -13,7 +13,7 @@ export const pluginConfiguration: PluginConfiguration[] = [
     name: "MouseFollower",
     displayName: "Mouse Follower",
     module: () => import("../../MouseFollower/model"),
-    isActive: true,
+    isActive: false,
     tree: {
       element: "canvas",
       appendTo: selectorMap.get("body"),
@@ -23,7 +23,7 @@ export const pluginConfiguration: PluginConfiguration[] = [
     name: "ImageTrailer",
     displayName: "Image Trailer",
     module: () => import("../../ImageTrailer/model"),
-    isActive: false,
+    isActive: true,
     tree: selectorMap.get("section")
   }
 ];
