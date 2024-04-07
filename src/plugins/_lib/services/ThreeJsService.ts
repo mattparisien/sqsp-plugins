@@ -89,3 +89,4 @@ class ThreeJsService extends PluginService {
 }
 
 export default ThreeJsService;
+    
