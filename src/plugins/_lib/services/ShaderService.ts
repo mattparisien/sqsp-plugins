@@ -49,6 +49,6 @@ class ShaderService<T = {}> extends ThreeJsService {
   init(): void {
     super.init();
   }
-}
+}  
 
 export default ShaderService;
