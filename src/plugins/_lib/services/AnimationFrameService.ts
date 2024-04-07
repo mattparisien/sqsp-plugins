@@ -35,6 +35,10 @@ class AnimationFrameService
     }
   }
 
+  isTicking() : boolean {
+    return this.animationFrameId !== null && this.animationFrameId !== undefined;
+  }
+
   onTick(timestamp: number): void {
     this.onTickCallback(timestamp);
   }

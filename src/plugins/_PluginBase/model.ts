@@ -6,6 +6,7 @@ export type PluginAllowedOptions<T> = Array<keyof T>;
 abstract class PluginBase<T> {
   private _globalPluginSelector = "data-candlelight-plugin";
 
+  
   protected container: HTMLElement; // The plugin HTML container element
   protected abstract allowedOptions: (keyof T)[];
 
@@ -89,8 +90,6 @@ abstract class PluginBase<T> {
         }
       }
     });
-
-    console.log(this);
   }
 
   // Sets custom data attributes on the container for easy identification

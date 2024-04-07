@@ -38,8 +38,13 @@ class MouseEventsService extends PluginService {
   private _options?: IMouseEventOption[];
   private _mouseMoveTimeOut?: number; // Timeout ID for debouncing
   private _debounceDelay = 300; // Delay in milliseconds
+  private _eventListeners: Array<{
+    event: string;
+    listener: EventListenerOrEventListenerObject;
+  }> = [];
 
   private _maxSpeed = 1000; // This value might need adjustment
+  private _isListening: boolean = false;
 
   constructor(element: Window | HTMLElement, options?: IMouseEventOption[]) {
     super();
@@ -53,21 +58,23 @@ class MouseEventsService extends PluginService {
     this.onMouseOut = this.onMouseOut.bind(this);
   }
 
-  private removeEventListeners(): void {
-    Object.values(EMouseEvent).forEach((event) => {
-      this._element.removeEventListener(
-        event.toLowerCase(),
-        this[`on${event}`]
-      );
+  private addEventListeners(options: IMouseEventOption[]): void {
+    options.forEach(({ event, handler }) => {
+      const listener = (e: MouseEvent) => this[`on${event}`](e, handler);
+      this._element.addEventListener(event.toLowerCase(), listener);
+      this._eventListeners.push({ event: event.toLowerCase(), listener });
     });
   }
 
-  private addEventListeners(options: IMouseEventOption[]): void {
-    options.forEach(({ event, handler }) => {
-      this._element.addEventListener(event.toLowerCase(), (e) =>
-        this[`on${event}`]?.(e, handler)
-      );
+  private removeEventListeners(): void {
+    this._eventListeners.forEach(({ event, listener }) => {
+      this._element.removeEventListener(event, listener);
     });
+    this._eventListeners = [];
+  }
+
+  isListening(): boolean {
+    return this._isListening;
   }
 
   getAvailableEvents(): EMouseEvent[] {
@@ -101,10 +108,13 @@ class MouseEventsService extends PluginService {
     if (this.isHovering) this.isHovering = false;
     callback?.(event);
   }
+  
   private calculateMouseSpeed(currentX: number, currentY: number): void {
     const currentTime = Date.now();
     const timeElapsed = (currentTime - this._prevTime) / 1000; // Time in seconds
-    const distance = Math.sqrt((currentX - this._prevClientX) ** 2 + (currentY - this._prevClientY) ** 2);
+    const distance = Math.sqrt(
+      (currentX - this._prevClientX) ** 2 + (currentY - this._prevClientY) ** 2
+    );
 
     // Calculate speed in pixels per second
     let speed = timeElapsed > 0 ? distance / timeElapsed : 0;
@@ -118,18 +128,19 @@ class MouseEventsService extends PluginService {
     this._prevTime = currentTime;
   }
 
-
   getMouseSpeed(): number {
     return this._mouseSpeed;
   }
 
   init(): void {
     this.addEventListeners(this._options);
+    this._isListening = true;
   }
 
   // Ensure to call removeEventListeners when the service is no longer needed
   destroy(): void {
     this.removeEventListeners();
+    this._isListening = false;
   }
 }
 

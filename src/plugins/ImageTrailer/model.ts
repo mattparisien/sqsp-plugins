@@ -27,14 +27,16 @@ interface IImageData {
 }
 
 class ImageTrailer extends PluginBase<IImageTrailerptions> {
-  private _mouseEventsService: MouseEventsService | null = null;
+  private _windowMouseEvents: MouseEventsService | null = null;
+  private _sectionMouseEvents: MouseEventsService | null = null;
   private _tickService: AnimationFrameService | null = null;
   private _imageService: ImageService | null = null;
   private _timelines: GSAPTimeline[] | null = null;
   private _currImageIdx: number = 0;
-  private _speed: number = 1;
-  private _crop: EAspectRatio | null = EAspectRatio.Landscape;
+  private _crop: EAspectRatio | null = null;
   private _maxWidth: number = 240;
+
+  private _isActive: boolean = false;
 
   private _lastMouseX: number = 0;
   private _lastMouseY: number = 0;
@@ -46,11 +48,14 @@ class ImageTrailer extends PluginBase<IImageTrailerptions> {
   private _minOpacity: number = 0.0; // Minimum opacity (fully transparent)
   private _fadeRate: number = 0.08; // Rate at which the image fades out
 
-  private readonly _mouseMoveThreshold: number = 50;
 
   private _imageData: IImageData[] | null = null;
   private _debounceTickerId: any = null;
+
+  private readonly _mouseMoveThreshold: number = 50;
   private readonly _debounceTickerTimeout: number = 100;
+
+  
 
   posX = 0;
   posY = 0;
@@ -67,6 +72,8 @@ class ImageTrailer extends PluginBase<IImageTrailerptions> {
     "https://images.pexels.com/photos/20837398/pexels-photo-20837398/free-photo-of-a-woman-in-a-coat-and-dress-is-posing-for-a-photo.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/20788940/pexels-photo-20788940/free-photo-of-the-cover-of-the-album-the-girl-in-the-red-dress.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     "https://images.pexels.com/photos/20144127/pexels-photo-20144127/free-photo-of-two-peacocks-standing-in-front-of-a-building.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    "https://purepng.com/public/uploads/large/big-green-watermelon-t18.png",
+
   ];
 
   constructor(container: any, options: PluginOptions<IImageTrailerptions>) {
@@ -75,10 +82,20 @@ class ImageTrailer extends PluginBase<IImageTrailerptions> {
     this.validateOptions(options);
 
     this._tickService = new AnimationFrameService(this.onTick.bind(this));
-    this._mouseEventsService = new MouseEventsService(window, [
+    this._windowMouseEvents = new MouseEventsService(window, [
       {
         event: EMouseEvent.Move,
-        handler: this.onMouseMove.bind(this),
+        handler: this.onWindowMouseMove.bind(this),
+      },
+    ]);
+    this._sectionMouseEvents = new MouseEventsService(this.container, [
+      {
+        event: EMouseEvent.Move,
+        handler: this.onSectionMouseMove.bind(this),
+      },
+      {
+        event: EMouseEvent.Leave,
+        handler: this.onSectionMouseLeave.bind(this),
       },
     ]);
     this._imageService = new ImageService(
@@ -140,7 +157,7 @@ class ImageTrailer extends PluginBase<IImageTrailerptions> {
     return timeout;
   }
 
-  onMouseMove(event: MouseEvent): void {
+  onWindowMouseMove(event: MouseEvent): void {
     const { left, top } = this.getContainerBounds();
     this._posX = event.clientX - left;
     this._posY = event.clientY - top;
@@ -159,11 +176,23 @@ class ImageTrailer extends PluginBase<IImageTrailerptions> {
     // Debounce logic to detect when mouse movement stops, if needed
     if (this._debounceTickerId) clearTimeout(this._debounceTickerId);
     this._debounceTickerId = setTimeout(() => {
-      this.onMouseMoveStop();
+      this.onWindowMouseMoveStop();
     }, this._debounceTickerTimeout);
   }
 
-  onMouseMoveStop(): void {
+  onSectionMouseMove() {
+    if (!this._isActive) this._isActive = true;
+    if (!this._windowMouseEvents.isListening()) this._windowMouseEvents.init();
+    if (!this._tickService.isTicking()) this._tickService.startAnimation();
+  }
+
+  onSectionMouseLeave() {
+    // Cleanup
+    this._windowMouseEvents.destroy();
+    this._isActive = false;
+  }
+
+  onWindowMouseMoveStop(): void {
     clearTimeout(this._debounceTickerId);
     this._debounceTickerId = null;
   }
@@ -171,16 +200,6 @@ class ImageTrailer extends PluginBase<IImageTrailerptions> {
   onImageSwitch(): void {
     this.incrementCurrImageIdx();
     this.updateStacking();
-    // this._imageData[this.getPrevImageIdx()].isActive = false;
-    // this._imageData[this._currImageIdx].isActive = true;
-  }
-
-  showImage(imageIdx: number): void {
-    // this._images[imageIdx].classList.add("fade-out");
-  }
-
-  hideImage(imageIdx: number) {
-    this.getImageNode(imageIdx).classList.remove("fade-out");
   }
 
   getCurrentImage(): HTMLElement {
@@ -310,13 +329,13 @@ class ImageTrailer extends PluginBase<IImageTrailerptions> {
   }
 
   init(): void {
-    this._mouseEventsService.init();
     this._imageService
       .init()
       .then((images) => {
         this.createImages(images);
         this.appendImages();
         this.createTimelines();
+        this._sectionMouseEvents.init();
         this._tickService.init();
       })
       .catch((err) => console.log(err));
