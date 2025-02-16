@@ -96,6 +96,7 @@ export async function initializePlugin(pluginName: string): Promise<void> {
       options = getPluginOptionsFromScript(script);
       config = await getPluginConfig(pluginName); // Get the configuration object
 
+
       if (!config)
         throw new Error(
           `System configuration object not found for plugin ${pluginName}`

@@ -6,7 +6,7 @@ export const pluginConfiguration: PluginConfiguration[] = [
     name: "MagneticButton",
     displayName: "Magnetic Button",
     tree: selectorMap.get("button"),
-    isActive: false,
+    isActive: true,
     module: () => import("../../MagneticButton/model"),
   },
   {
@@ -23,7 +23,7 @@ export const pluginConfiguration: PluginConfiguration[] = [
     name: "ImageTrailer",
     displayName: "Image Trailer",
     module: () => import("../../ImageTrailer/model"),
-    isActive: true,
+    isActive: false,
     tree: selectorMap.get("section")
   }
 ];
