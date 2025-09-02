@@ -26,9 +26,6 @@ class LayeredSections
   private _step: number = 10;
   private _tickService: AnimationFrameService;
 
-  private _colorProxy: string = this._color;
-  private _radiusProxy: number = this._radius;
-
   codeBlock = null;
   svg = null;
   sections: HTMLElement[] = [];
