@@ -107,6 +107,9 @@ export async function initializePlugin(pluginName: string): Promise<void> {
       if (isDev) {
         console.log("Development environment detected, skipping plugin load.");
         return;
+      } else {
+        console.log(`Initializing plugin: ${pluginName}`);
+        
       }
 
       options = getPluginOptionsFromScript(script);

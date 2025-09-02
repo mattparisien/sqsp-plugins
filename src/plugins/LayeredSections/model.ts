@@ -306,7 +306,6 @@ class LayeredSections
     const resize = () => {
       // Check if in dev mode and destroy plugin if needed (only once)
       if (!this._destroyed && document.querySelector(SQSP_ENV_SELECTOR_MAP.get("DEV"))) {
-        this._destroyed = true;
         this.destroy();
         return;
       }
