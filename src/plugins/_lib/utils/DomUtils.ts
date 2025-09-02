@@ -115,7 +115,12 @@ class DomUtils {
   static wrapElement(element: HTMLElement, wrapperEl: string | HTMLElement): HTMLElement {
     if (!element || !wrapperEl || (typeof wrapperEl === "string" && wrapperEl.trim() === "")) return;
 
-    const wrapper = wrapperEl instanceof HTMLElement ? wrapperEl : document.createElement(wrapperEl);
+    const wrapper = wrapperEl instanceof HTMLElement ? wrapperEl.cloneNode(true) as HTMLElement : document.createElement(wrapperEl);
+    
+    // Insert the wrapper before the element in the DOM
+    element.parentNode?.insertBefore(wrapper, element);
+    
+    // Move the element into the wrapper
     wrapper.appendChild(element);
 
     return wrapper;
@@ -126,17 +131,75 @@ class DomUtils {
    * @param wrapperEl A string corresponding to the html element to use to wrap the elements
    * @returns The wrapped elements
    */
-  static wrapMany(elements: HTMLElement[], wrapperEl: string | HTMLElement): HTMLElement[] {
+  static wrapMany(elements: HTMLElement[], wrapperEl: string | HTMLElement, attrs?: { [key: string]: string }): HTMLElement[] {
     if (!elements || !elements.length) return;
 
     const wrappedElements = [];
 
     elements.forEach((element) => {
       const wrapper = DomUtils.wrapElement(element, wrapperEl);
+      if (attrs) {
+        Object.keys(attrs).forEach((key) => {
+          wrapper.setAttribute(key, attrs[key]);
+        });
+      }
       wrappedElements.push(wrapper);
     });
 
     return wrappedElements;
+  }
+
+  /**
+   * Wraps all sibling elements following the specified start element up to a given index in a single wrapper element.
+   * @param startElement The element after which siblings will be wrapped.
+   * @param wrapperEl A string corresponding to the html element to use to wrap the siblings
+   * @param stopAtIndex The index at which to stop wrapping siblings (0-based).
+   * @param attrs Optional attributes to set on the wrapper element.
+   * @param includeStartElement Whether to include the start element itself in the wrapper.
+   * @returns The wrapper HTMLElement containing all the siblings.
+   * */
+  static wrapSiblings(startElement: HTMLElement, wrapperEl: string | HTMLElement, stopAtIndex: number, attrs?: { [key: string]: string }, includeStartElement?: boolean): HTMLElement {
+    if (!startElement || !wrapperEl || (typeof wrapperEl === "string" && wrapperEl.trim() === "")) return;
+
+    // Create the single wrapper element
+    const wrapper = typeof wrapperEl === 'string' ? document.createElement(wrapperEl) : wrapperEl.cloneNode(true) as HTMLElement;
+    
+    // Add attributes if provided
+    if (attrs) {
+      Object.keys(attrs).forEach((key) => {
+        wrapper.setAttribute(key, attrs[key]);
+      });
+    }
+
+    // Collect all elements to wrap
+    const elementsToWrap: HTMLElement[] = [];
+    
+    // Include start element if requested
+    if (includeStartElement) {
+      elementsToWrap.push(startElement);
+    }
+    
+    // Collect siblings
+    let currentElement: HTMLElement | null = startElement.nextElementSibling as HTMLElement;
+    let currentIndex = 0;
+
+    while (currentElement && currentIndex <= stopAtIndex) {
+      elementsToWrap.push(currentElement);
+      currentElement = currentElement.nextElementSibling as HTMLElement;
+      currentIndex++;
+    }
+
+    if (elementsToWrap.length > 0) {
+      // Insert the wrapper before the first element
+      elementsToWrap[0].parentNode?.insertBefore(wrapper, elementsToWrap[0]);
+      
+      // Move all elements into the wrapper
+      elementsToWrap.forEach(element => {
+        wrapper.appendChild(element);
+      });
+    }
+
+    return wrapper;
   }
 
   /**

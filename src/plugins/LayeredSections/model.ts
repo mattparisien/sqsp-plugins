@@ -22,32 +22,10 @@ interface ILayeredSections {
 class LayeredSections
   extends PluginBase<ILayeredSectionsOptions>
   implements ILayeredSections {
-  private _canvasService: CanvasService;
-  private _tickService: AnimationFrameService;
-  private _mouseEventsService: MouseEventsService;
-  private _mouseMoveDebounceId: any = null;
-  private _mouseMoveDebounceMs: number = 100;
-  private _partyTimerId: any = null;
-  private _partyTimerMs: number = 500;
 
   private _color: string = "red";
   private _radius: number = 10;
-  private _speed: number = 0.1;
-  private _palette: string[] = ArrayUtils.shuffle([
-    "#61833C",
-    "#DC8D82",
-    "#B32C2A",
-    "#DC969E",
-    "#CFCDC4",
-    "#507941",
-    "#CC7A3B",
-    "#7092AD",
-    "#AF6530",
-    "#F2AC0A",
-    "#F3D5B6",
-    "#B0A336",
-    "#AD9AB0",
-  ]);
+  private _tickService: AnimationFrameService;
 
   private _colorProxy: string = this._color;
   private _radiusProxy: number = this._radius;
@@ -60,11 +38,15 @@ class LayeredSections
   constructor(container: any, options: PluginOptions<ILayeredSectionsOptions>) {
     super(container, "");
 
-    this.codeBlock = DomUtils.traverseUpTo(this.container, SQSP_BLOCK_SELECTOR_MAP.get("code"));
-    this.sections = DomUtils.getNextSiblings(this.codeBlock, HTML_SELECTOR_MAP.get("section"), 2);
+    this.codeBlock = DomUtils.traverseUpTo(this.container, HTML_SELECTOR_MAP.get("section"));
 
-    console.log(this.sections);
+    if (!this.codeBlock) {
+      console.warn("LayeredSections: No parent section found for the plugin container.");
+      return;
+    }
 
+    this.sections = DomUtils.getNextSiblings(this.codeBlock, HTML_SELECTOR_MAP.get("section"), 0);
+    this.container = DomUtils.wrapSiblings(this.sections[0], "div", 0, { class: "layered-sections-container" }, true);
     this._tickService = new AnimationFrameService(this.onTick.bind(this));
 
   }
