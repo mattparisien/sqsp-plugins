@@ -1,4 +1,4 @@
-import { HTML_SELECTOR_MAP } from "../config/domMappings";
+import { HTML_SELECTOR_MAP, SQSP_ENV_SELECTOR_MAP } from "../config/domMappings";
 import { pluginConfiguration } from "../config/plugins";
 import { ElementTree, HTMLSelector, PluginConfiguration } from "../ts/types";
 import DomUtils from "./DomUtils";
@@ -92,7 +92,20 @@ export async function initializePlugin(pluginName: string): Promise<void> {
 
   window.addEventListener("load", async () => {
     try {
-      let options, module, Class, config: PluginConfiguration, containerNodes;
+      let options, module, Class, config: PluginConfiguration, containerNodes, isDev;
+
+      if (!script) {
+        throw new Error(
+          `Error initializing plugin ${pluginName}. Script tag not found.`
+        );
+      }
+
+      isDev = document.querySelector(SQSP_ENV_SELECTOR_MAP.get("DEV"));
+      
+      if (isDev) {
+        console.log("Development environment detected, skipping plugin load.");
+        return;
+      }
 
       options = getPluginOptionsFromScript(script);
       config = await getPluginConfig(pluginName); // Get the configuration object

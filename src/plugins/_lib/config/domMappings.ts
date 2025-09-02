@@ -70,4 +70,7 @@ export const SQSP_BLOCK_SELECTOR_MAP = new Map<string, string>([
   ["form", getSelector("sqsp-form")],
 ]);
 
-
+export const SQSP_ENV_SELECTOR_MAP = new Map<string,string>([
+  ["DEV", "body.squarespace-editable"],
+  ["PROD", "body[data-env='prod']"]
+]);
