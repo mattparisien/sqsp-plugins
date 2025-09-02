@@ -1,4 +1,4 @@
-import { HTML_SELECTOR_MAP } from "../_lib/config/domMappings";
+import { HTML_SELECTOR_MAP, SQSP_ENV_SELECTOR_MAP } from "../_lib/config/domMappings";
 import {
   AnimationFrameService
 } from "../_lib/services";
@@ -14,6 +14,7 @@ interface ILayeredSectionsOptions {
 interface ILayeredSections {
   codeBlock: HTMLElement | null;
   init(): void;
+  destroy(): void;
 
 }
 
@@ -25,10 +26,24 @@ class LayeredSections
   private _radius: number = 80;
   private _step: number = 10;
   private _tickService: AnimationFrameService;
+  private _destroyed: boolean = false;
 
   codeBlock = null;
   svg = null;
   sections: HTMLElement[] = [];
+  originalDomState: {
+    parent: HTMLElement | null;
+    nextSibling: Node | null;
+    sectionsData: Array<{
+      element: HTMLElement;
+      parent: HTMLElement | null;
+      nextSibling: Node | null;
+    }>;
+  } = {
+    parent: null,
+    nextSibling: null,
+    sectionsData: []
+  };
 
   allowedOptions: (keyof ILayeredSectionsOptions)[] = []
 
@@ -43,6 +58,10 @@ class LayeredSections
     }
 
     this.sections = DomUtils.getNextSiblings(this.codeBlock, HTML_SELECTOR_MAP.get("section"), 0);
+    
+    // Capture DOM state before wrapping
+    this.captureDomState();
+    
     this.container = DomUtils.wrapSiblings(this.sections[0], "div", 0, { "data-candlelight-plugin-layered-sections-container": "true" }, true);
     this.sections = Array.from(this.container.children).filter((child) => child.matches(HTML_SELECTOR_MAP.get("section"))) as HTMLElement[];
 
@@ -54,6 +73,53 @@ class LayeredSections
 
   protected validateOptions(options: PluginOptions<ILayeredSectionsOptions>) {
     this.setOptions(options);
+  }
+
+  private captureDomState(): void {
+    if (!this.sections.length) return;
+
+    // Store the original parent of the first section (where we'll insert the wrapper)
+    const firstSection = this.sections[0];
+    this.originalDomState.parent = firstSection.parentElement;
+    this.originalDomState.nextSibling = firstSection.nextSibling;
+
+    // Store data for each section that will be wrapped
+    this.originalDomState.sectionsData = this.sections.map(section => ({
+      element: section,
+      parent: section.parentElement,
+      nextSibling: section.nextSibling
+    }));
+
+    console.log('DOM state captured:', this.originalDomState);
+  }
+
+  restoreDomState(): void {
+    if (!this.originalDomState.parent || !this.originalDomState.sectionsData.length) {
+      console.warn('No original DOM state to restore');
+      return;
+    }
+
+    try {
+      // Remove the wrapper container
+      if (this.container && this.container.parentElement) {
+        this.container.parentElement.removeChild(this.container);
+      }
+
+      // Restore each section to its original position
+      this.originalDomState.sectionsData.forEach(({ element, parent, nextSibling }) => {
+        if (parent) {
+          if (nextSibling) {
+            parent.insertBefore(element, nextSibling);
+          } else {
+            parent.appendChild(element);
+          }
+        }
+      });
+
+      console.log('DOM state restored successfully');
+    } catch (error) {
+      console.error('Error restoring DOM state:', error);
+    }
   }
 
   private appendSvgMask(): SVGElement {
@@ -238,6 +304,13 @@ class LayeredSections
 
     // Handle resize: keep SVG sized to the viewport/container
     const resize = () => {
+      // Check if in dev mode and destroy plugin if needed (only once)
+      if (!this._destroyed && document.querySelector(SQSP_ENV_SELECTOR_MAP.get("DEV"))) {
+        this._destroyed = true;
+        this.destroy();
+        return;
+      }
+
       const rect = this.container.getBoundingClientRect();
       this.svg.setAttribute("width", String(rect.width));
       this.svg.setAttribute("height", String(rect.height));
@@ -246,6 +319,33 @@ class LayeredSections
 
     resize();
     window.addEventListener("resize", resize);
+  }
+
+  destroy(): void {
+    if (this._destroyed) {
+      console.log('LayeredSections plugin already destroyed');
+      return;
+    }
+
+    console.log('Destroying LayeredSections plugin...');
+    this._destroyed = true;
+    
+    // Remove event listeners
+    this.container?.removeEventListener("pointerdown", () => {});
+    window.removeEventListener("pointermove", () => {});
+    window.removeEventListener("pointerup", () => {});
+    window.removeEventListener("pointercancel", () => {});
+    window.removeEventListener("keydown", () => {});
+    window.removeEventListener("keyup", () => {});
+    window.removeEventListener("resize", () => {});
+    
+    // Stop animation service
+    this._tickService?.stopAnimation();
+    
+    // Restore original DOM state
+    this.restoreDomState();
+    
+    console.log('LayeredSections plugin destroyed');
   }
 }
 
