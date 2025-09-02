@@ -115,7 +115,12 @@ class DomUtils {
   static wrapElement(element: HTMLElement, wrapperEl: string | HTMLElement): HTMLElement {
     if (!element || !wrapperEl || (typeof wrapperEl === "string" && wrapperEl.trim() === "")) return;
 
-    const wrapper = wrapperEl instanceof HTMLElement ? wrapperEl : document.createElement(wrapperEl);
+    const wrapper = wrapperEl instanceof HTMLElement ? wrapperEl.cloneNode(true) as HTMLElement : document.createElement(wrapperEl);
+    
+    // Insert the wrapper before the element in the DOM
+    element.parentNode?.insertBefore(wrapper, element);
+    
+    // Move the element into the wrapper
     wrapper.appendChild(element);
 
     return wrapper;
@@ -126,17 +131,141 @@ class DomUtils {
    * @param wrapperEl A string corresponding to the html element to use to wrap the elements
    * @returns The wrapped elements
    */
-  static wrapMany(elements: HTMLElement[], wrapperEl: string | HTMLElement): HTMLElement[] {
+  static wrapMany(elements: HTMLElement[], wrapperEl: string | HTMLElement, attrs?: { [key: string]: string }): HTMLElement[] {
     if (!elements || !elements.length) return;
 
     const wrappedElements = [];
 
     elements.forEach((element) => {
       const wrapper = DomUtils.wrapElement(element, wrapperEl);
+      if (attrs) {
+        Object.keys(attrs).forEach((key) => {
+          wrapper.setAttribute(key, attrs[key]);
+        });
+      }
       wrappedElements.push(wrapper);
     });
 
     return wrappedElements;
+  }
+
+  /**
+   * Wraps all sibling elements following the specified start element up to a given index in a single wrapper element.
+   * @param startElement The element after which siblings will be wrapped.
+   * @param wrapperEl A string corresponding to the html element to use to wrap the siblings
+   * @param stopAtIndex The index at which to stop wrapping siblings (0-based).
+   * @param attrs Optional attributes to set on the wrapper element.
+   * @param includeStartElement Whether to include the start element itself in the wrapper.
+   * @returns The wrapper HTMLElement containing all the siblings.
+   * */
+  static wrapSiblings(startElement: HTMLElement, wrapperEl: string | HTMLElement, stopAtIndex: number, attrs?: { [key: string]: string }, includeStartElement?: boolean): HTMLElement {
+    if (!startElement || !wrapperEl || (typeof wrapperEl === "string" && wrapperEl.trim() === "")) return;
+
+    // Create the single wrapper element
+    const wrapper = typeof wrapperEl === 'string' ? document.createElement(wrapperEl) : wrapperEl.cloneNode(true) as HTMLElement;
+    
+    // Add attributes if provided
+    if (attrs) {
+      Object.keys(attrs).forEach((key) => {
+        wrapper.setAttribute(key, attrs[key]);
+      });
+    }
+
+    // Collect all elements to wrap
+    const elementsToWrap: HTMLElement[] = [];
+    
+    // Include start element if requested
+    if (includeStartElement) {
+      elementsToWrap.push(startElement);
+    }
+    
+    // Collect siblings
+    let currentElement: HTMLElement | null = startElement.nextElementSibling as HTMLElement;
+    let currentIndex = 0;
+
+    while (currentElement && currentIndex <= stopAtIndex) {
+      elementsToWrap.push(currentElement);
+      currentElement = currentElement.nextElementSibling as HTMLElement;
+      currentIndex++;
+    }
+
+    if (elementsToWrap.length > 0) {
+      // Insert the wrapper before the first element
+      elementsToWrap[0].parentNode?.insertBefore(wrapper, elementsToWrap[0]);
+      
+      // Move all elements into the wrapper
+      elementsToWrap.forEach(element => {
+        wrapper.appendChild(element);
+      });
+    }
+
+    return wrapper;
+  }
+
+  /**
+   * Traverses up the DOM tree from the currently focused element to find the nearest ancestor that matches the specified selector.
+   * @param element The starting HTMLElement to begin traversal from.
+   * @param selector The CSS selector to match against ancestor elements.
+   * @returns The matching ancestor HTMLElement, or null if none is found.
+   * */
+
+  static traverseUpTo(element: HTMLElement, selector: string): HTMLElement | null {
+    if (!element || !selector) return null;
+
+    let currentElement: HTMLElement | null = element;
+    while (currentElement) {
+      if (currentElement.matches(selector)) {
+        return currentElement;
+      }
+      currentElement = currentElement.parentElement;
+    }
+    return null;
+  }
+
+
+  /**
+   * Traverses the DOM tree from the given element to find the next sibling that matches the specified selector.
+   * @param element The starting HTMLElement to begin traversal from.
+   * @param selector The CSS selector to match against sibling elements.
+   * @return The matching sibling HTMLElement, or null if none is found.
+   * */
+  static getNextSibling(element: HTMLElement, selector: string): HTMLElement | null {
+    if (!element || !selector) return null;
+
+    let sibling: HTMLElement | null = element.nextElementSibling as HTMLElement;
+    while (sibling) {
+      if (sibling.matches(selector)) {
+        return sibling;
+      }
+      sibling = sibling.nextElementSibling as HTMLElement;
+    }
+    return null;
+  }
+
+  /**
+   * Traverses the DOM tree from the given element to find all next siblings that match the specified selector, up to a specified index.
+   * @param element The starting HTMLElement to begin traversal from.
+   * @param selector The CSS selector to match against sibling elements.
+   * @param stopAtIndex The index at which to stop collecting matching siblings (0-based).
+   * @return An array of matching sibling HTMLElements.
+   * */
+  static getNextSiblings(element: HTMLElement, selector: string, stopAtIndex: number): HTMLElement[] {
+    if (!element || !selector) return [];
+
+    const siblings: HTMLElement[] = [];
+    let sibling: HTMLElement | null = element.nextElementSibling as HTMLElement;
+    let currentIndex = 0;
+
+    while (sibling) {
+      if (sibling.matches(selector)) {
+        siblings.push(sibling);
+        if (currentIndex === stopAtIndex) break;
+        currentIndex++;
+      }
+      sibling = sibling.nextElementSibling as HTMLElement;
+    }
+
+    return siblings;
   }
 }
 

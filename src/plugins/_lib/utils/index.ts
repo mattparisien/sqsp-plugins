@@ -1,3 +1,4 @@
+import { HTML_SELECTOR_MAP } from "../config/domMappings";
 import { pluginConfiguration } from "../config/plugins";
 import { ElementTree, HTMLSelector, PluginConfiguration } from "../ts/types";
 import DomUtils from "./DomUtils";
@@ -111,28 +112,38 @@ export async function initializePlugin(pluginName: string): Promise<void> {
             `Error loading class or config. Plugin ${pluginName} not found.`
           );
 
-        if (isHTMLSelector(config.tree)) {
-          containerNodes = getContainersBySelector(config.tree as HTMLSelector);
-        } else {
-          containerNodes = createTree(config.tree as ElementTree);
-        }
+        if (config.tree) {
 
-        if (
-          !containerNodes ||
-          (Array.isArray(containerNodes) && !containerNodes.length)
-        ) {
-          throw new Error(
-            `Error finding/creating container node(s) for plugin ${pluginName}`
-          );
-        } else if (Array.isArray(containerNodes)) {
-          containerNodes.forEach((container) => {
+          if (isHTMLSelector(config.tree)) {
+            containerNodes = getContainersBySelector(config.tree as HTMLSelector);
+          } else {
+            containerNodes = createTree(config.tree as ElementTree);
+          }
+
+          if (
+            !containerNodes ||
+            (Array.isArray(containerNodes) && !containerNodes.length)
+          ) {
+            throw new Error(
+              `Error finding/creating container node(s) for plugin ${pluginName}`
+            );
+          } else if (Array.isArray(containerNodes)) {
+            containerNodes.forEach((container) => {
+              const instance = new Class(container, options);
+              instance.init();
+            });
+          } else {
+            const instance = new Class(containerNodes as HTMLElement, options);
+            instance.init();
+          }
+        } else {
+          containerNodes = Array.from(document.querySelectorAll(HTML_SELECTOR_MAP.get(pluginName)))
+          containerNodes.forEach(container => {
             const instance = new Class(container, options);
             instance.init();
-          });
-        } else {
-          const instance = new Class(containerNodes as HTMLElement, options);
-          instance.init();
+          })
         }
+
       }
     } catch (err) {
       console.error(err);

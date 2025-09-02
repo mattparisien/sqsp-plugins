@@ -9,7 +9,7 @@
     "create-plugin": "node scripts/createPlugin.js",
     "create-plugin-mixin": "node scripts/createPluginMixin.js",
     "build-plugins": "node scripts/build-plugins.js",
-    "dev": "webpack serve"
+    "dev": "npm run build && webpack serve"
   },
   "author": "",
   "license": "ISC",

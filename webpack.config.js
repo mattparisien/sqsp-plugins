@@ -38,7 +38,11 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
       {
-        test: /\.(png|gif|jpg|jpeg|svg|xml)$/,
+        test: /\.svg$/,
+        type: 'asset/source',
+      },
+      {
+        test: /\.(png|gif|jpg|jpeg|xml)$/,
         use: ["url-loader"],
       },
     ],
@@ -83,4 +87,7 @@ module.exports = {
     }),
     new EnvironmentPlugin(["BASE_URL"]), // List all environment variables you use here
   ],
+  performance: {
+    hints: false, // Suppress bundle size warnings
+  },
 };
