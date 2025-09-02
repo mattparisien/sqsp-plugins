@@ -176,19 +176,8 @@ class LayeredSections
       sectionElement.style.height = '100%';
       sectionElement.style.zIndex = String(index + 1);
 
-      // Add some test content and styling to make sections visible
-      if (!sectionElement.textContent?.trim()) {
-        sectionElement.innerHTML = `<div style="padding: 20px; height: 100vh; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">Layer ${index + 1}</div>`;
-      }
-
-      // Add background colors for testing
-      const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
-      sectionElement.style.backgroundColor = colors[index % colors.length];
-
-      console.log('made it here', index)
       // Apply the mask to reveal sections (skip the bottom layer)
       if (index > 0) {
-        console.log('hello!');
         sectionElement.style.mask = "url(#reveal-mask)";
         sectionElement.style.webkitMask = "url(#reveal-mask)";
       }
