@@ -138,6 +138,72 @@ class DomUtils {
 
     return wrappedElements;
   }
+
+  /**
+   * Traverses up the DOM tree from the currently focused element to find the nearest ancestor that matches the specified selector.
+   * @param element The starting HTMLElement to begin traversal from.
+   * @param selector The CSS selector to match against ancestor elements.
+   * @returns The matching ancestor HTMLElement, or null if none is found.
+   * */
+
+  static traverseUpTo(element: HTMLElement, selector: string): HTMLElement | null {
+    if (!element || !selector) return null;
+
+    let currentElement: HTMLElement | null = element;
+    while (currentElement) {
+      if (currentElement.matches(selector)) {
+        return currentElement;
+      }
+      currentElement = currentElement.parentElement;
+    }
+    return null;
+  }
+
+
+  /**
+   * Traverses the DOM tree from the given element to find the next sibling that matches the specified selector.
+   * @param element The starting HTMLElement to begin traversal from.
+   * @param selector The CSS selector to match against sibling elements.
+   * @return The matching sibling HTMLElement, or null if none is found.
+   * */
+  static getNextSibling(element: HTMLElement, selector: string): HTMLElement | null {
+    if (!element || !selector) return null;
+
+    let sibling: HTMLElement | null = element.nextElementSibling as HTMLElement;
+    while (sibling) {
+      if (sibling.matches(selector)) {
+        return sibling;
+      }
+      sibling = sibling.nextElementSibling as HTMLElement;
+    }
+    return null;
+  }
+
+  /**
+   * Traverses the DOM tree from the given element to find all next siblings that match the specified selector, up to a specified index.
+   * @param element The starting HTMLElement to begin traversal from.
+   * @param selector The CSS selector to match against sibling elements.
+   * @param stopAtIndex The index at which to stop collecting matching siblings (0-based).
+   * @return An array of matching sibling HTMLElements.
+   * */
+  static getNextSiblings(element: HTMLElement, selector: string, stopAtIndex: number): HTMLElement[] {
+    if (!element || !selector) return [];
+
+    const siblings: HTMLElement[] = [];
+    let sibling: HTMLElement | null = element.nextElementSibling as HTMLElement;
+    let currentIndex = 0;
+
+    while (sibling) {
+      if (sibling.matches(selector)) {
+        siblings.push(sibling);
+        if (currentIndex === stopAtIndex) break;
+        currentIndex++;
+      }
+      sibling = sibling.nextElementSibling as HTMLElement;
+    }
+
+    return siblings;
+  }
 }
 
 export default DomUtils;

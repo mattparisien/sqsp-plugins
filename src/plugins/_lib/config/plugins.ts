@@ -1,22 +1,22 @@
 import { PluginConfiguration } from "../ts/types";
-import selectorMap from "./selectorMapping";
+import { HTML_SELECTOR_MAP } from "./domMappings";
 
 export const pluginConfiguration: PluginConfiguration[] = [
   {
     name: "MagneticButton",
     displayName: "Magnetic Button",
-    tree: selectorMap.get("button"),
-    isActive: true,
+    tree: HTML_SELECTOR_MAP.get("button"),
+    isActive: false,
     module: () => import("../../MagneticButton/model"),
   },
   {
     name: "MouseFollower",
     displayName: "Mouse Follower",
     module: () => import("../../MouseFollower/model"),
-    isActive: true,
+    isActive: false,
     tree: {
       element: "canvas",
-      appendTo: selectorMap.get("body"),
+      appendTo: HTML_SELECTOR_MAP.get("body"),
     },
   },
   {
@@ -24,6 +24,12 @@ export const pluginConfiguration: PluginConfiguration[] = [
     displayName: "Image Trailer",
     module: () => import("../../ImageTrailer/model"),
     isActive: false,
-    tree: selectorMap.get("section")
+    tree: HTML_SELECTOR_MAP.get("section")
+  },
+  {
+    name: "LayeredSections",
+    displayName: "Layered Sections",
+    module: () => import("../../LayeredSections/model"),
+    isActive: true,
   }
 ];
