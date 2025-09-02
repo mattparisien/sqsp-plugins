@@ -38,7 +38,11 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
       {
-        test: /\.(png|gif|jpg|jpeg|svg|xml)$/,
+        test: /\.svg$/,
+        type: 'asset/source',
+      },
+      {
+        test: /\.(png|gif|jpg|jpeg|xml)$/,
         use: ["url-loader"],
       },
     ],
