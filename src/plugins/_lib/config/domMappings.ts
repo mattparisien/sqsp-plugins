@@ -71,6 +71,6 @@ export const SQSP_BLOCK_SELECTOR_MAP = new Map<string, string>([
 ]);
 
 export const SQSP_ENV_SELECTOR_MAP = new Map<string,string>([
-  ["DEV", "body.squarespace-editable"],
+  ["DEV", "body.sqs-is-page-editing"],
   ["PROD", "body[data-env='prod']"]
 ]);
