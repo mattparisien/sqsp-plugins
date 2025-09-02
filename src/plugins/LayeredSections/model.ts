@@ -1,11 +1,8 @@
-import { HTML_SELECTOR_MAP, SQSP_BLOCK_SELECTOR_MAP } from "../_lib/config/domMappings";
+import { HTML_SELECTOR_MAP } from "../_lib/config/domMappings";
 import {
-  AnimationFrameService,
-  CanvasService,
-  MouseEventsService,
+  AnimationFrameService
 } from "../_lib/services";
 import { PluginOptions } from "../_lib/ts/types";
-import ArrayUtils from "../_lib/utils/ArrayUtils";
 import DomUtils from "../_lib/utils/DomUtils";
 import PluginBase from "../_PluginBase/model";
 import maskSvg from "./assets/mask.svg";
@@ -50,14 +47,11 @@ class LayeredSections
 
     this.sections = DomUtils.getNextSiblings(this.codeBlock, HTML_SELECTOR_MAP.get("section"), 0);
     this.container = DomUtils.wrapSiblings(this.sections[0], "div", 0, { "data-candlelight-plugin-layered-sections-container": "true" }, true);
+    this.sections = Array.from(this.container.children).filter((child) => child.matches(HTML_SELECTOR_MAP.get("section"))) as HTMLElement[];
 
     // Append the SVG mask to the container
     this.svg = this.appendSvgMask();
-    console.log(this.svg)
     this._tickService = new AnimationFrameService(this.onTick.bind(this));
-
-    // Initialize the plugin
-    this.init();
 
   }
 
@@ -65,7 +59,7 @@ class LayeredSections
     this.setOptions(options);
   }
 
-  private appendSvgMask(): SVGElement{
+  private appendSvgMask(): SVGElement {
     if (!this.container) return;
 
     // Create a temporary div to parse the SVG string
@@ -110,7 +104,7 @@ class LayeredSections
           webkitMask?: string;
         }
       };
-      
+
       // Position sections absolutely so they can overlap
       sectionElement.style.position = 'absolute';
       sectionElement.style.top = '0';
@@ -118,18 +112,20 @@ class LayeredSections
       sectionElement.style.width = '100%';
       sectionElement.style.height = '100%';
       sectionElement.style.zIndex = String(index + 1);
-      
+
       // Add some test content and styling to make sections visible
       if (!sectionElement.textContent?.trim()) {
         sectionElement.innerHTML = `<div style="padding: 20px; height: 100vh; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">Layer ${index + 1}</div>`;
       }
-      
+
       // Add background colors for testing
       const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
       sectionElement.style.backgroundColor = colors[index % colors.length];
-      
+
+      console.log('made it here', index)
       // Apply the mask to reveal sections (skip the bottom layer)
       if (index > 0) {
+        console.log('hello!');
         sectionElement.style.mask = "url(#reveal-mask)";
         sectionElement.style.webkitMask = "url(#reveal-mask)";
       }
@@ -208,8 +204,8 @@ class LayeredSections
 
     const onPointerUp = (e: PointerEvent) => {
       dragging = false;
-      try { 
-        this.container.releasePointerCapture(e.pointerId); 
+      try {
+        this.container.releasePointerCapture(e.pointerId);
       } catch { }
       document.body.style.userSelect = "";
       document.body.style.cursor = "";
@@ -250,7 +246,7 @@ class LayeredSections
       this.svg.setAttribute("height", String(rect.height));
       this.svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
     };
-    
+
     resize();
     window.addEventListener("resize", resize);
   }

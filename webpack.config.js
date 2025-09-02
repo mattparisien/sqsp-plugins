@@ -87,4 +87,7 @@ module.exports = {
     }),
     new EnvironmentPlugin(["BASE_URL"]), // List all environment variables you use here
   ],
+  performance: {
+    hints: false, // Suppress bundle size warnings
+  },
 };
