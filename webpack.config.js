@@ -70,6 +70,7 @@ module.exports = {
     },
   },
   plugins: [
+    require('autoprefixer'),
     new HtmlWebpackPlugin({
       template: "src/index.html",
       scriptLoading: "blocking",
