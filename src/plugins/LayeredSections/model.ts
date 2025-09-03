@@ -8,7 +8,8 @@ import PluginBase from "../_PluginBase/model";
 import maskSvg from "./assets/mask.svg";
 
 interface ILayeredSectionsOptions {
-
+  radius?: number;
+  blur?: number;
 }
 
 interface ILayeredSections {
@@ -24,6 +25,7 @@ class LayeredSections
 
   private _color: string = "red";
   private _radius: number = 80;
+  private _blur: number = 0;
   private _step: number = 10;
   private _tickService: AnimationFrameService;
   private _destroyed: boolean = false;
@@ -34,6 +36,7 @@ class LayeredSections
   originalDomState: {
     parent: HTMLElement | null;
     nextSibling: Node | null;
+    codeBlockDisplay: string;
     sectionsData: Array<{
       element: HTMLElement;
       parent: HTMLElement | null;
@@ -42,10 +45,11 @@ class LayeredSections
   } = {
     parent: null,
     nextSibling: null,
+    codeBlockDisplay: '',
     sectionsData: []
   };
 
-  allowedOptions: (keyof ILayeredSectionsOptions)[] = []
+  allowedOptions: (keyof ILayeredSectionsOptions)[] = ['radius', 'blur']
 
   constructor(container: any, options: PluginOptions<ILayeredSectionsOptions>) {
     super(container, "");
@@ -58,9 +62,20 @@ class LayeredSections
     }
 
     this.sections = DomUtils.getNextSiblings(this.codeBlock, HTML_SELECTOR_MAP.get("section"), 0);
-    
+
+    // Ensure we have sections to work with
+    if (!this.sections?.length) {
+      console.warn("LayeredSections: No sibling sections found.");
+      return;
+    }
+
     // Capture DOM state before wrapping
     this.captureDomState();
+    
+    // Hide the code block
+    if (this.codeBlock) {
+      (this.codeBlock as HTMLElement).style.display = 'none';
+    }
     
     this.container = DomUtils.wrapSiblings(this.sections[0], "div", 0, { "data-candlelight-plugin-layered-sections-container": "true" }, true);
     this.sections = Array.from(this.container.children).filter((child) => child.matches(HTML_SELECTOR_MAP.get("section"))) as HTMLElement[];
@@ -73,6 +88,14 @@ class LayeredSections
 
   protected validateOptions(options: PluginOptions<ILayeredSectionsOptions>) {
     this.setOptions(options);
+    
+    // Apply options
+    if (options.radius !== undefined) {
+      this._radius = options.radius;
+    }
+    if (options.blur !== undefined) {
+      this._blur = options.blur;
+    }
   }
 
   private captureDomState(): void {
@@ -82,6 +105,11 @@ class LayeredSections
     const firstSection = this.sections[0];
     this.originalDomState.parent = firstSection.parentElement;
     this.originalDomState.nextSibling = firstSection.nextSibling;
+
+    // Store the original display style of the code block
+    if (this.codeBlock) {
+      this.originalDomState.codeBlockDisplay = (this.codeBlock as HTMLElement).style.display || '';
+    }
 
     // Store data for each section that will be wrapped
     this.originalDomState.sectionsData = this.sections.map(section => ({
@@ -100,6 +128,11 @@ class LayeredSections
     }
 
     try {
+      // Restore the code block display style
+      if (this.codeBlock) {
+        (this.codeBlock as HTMLElement).style.display = this.originalDomState.codeBlockDisplay;
+      }
+
       // Remove the wrapper container
       if (this.container && this.container.parentElement) {
         this.container.parentElement.removeChild(this.container);
@@ -132,6 +165,28 @@ class LayeredSections
     // Get the SVG element and append it to the container
     const svgElement = tempDiv.querySelector('svg');
     if (svgElement) {
+      // Add blur filter if blur is specified
+      if (this._blur > 0) {
+        const defs = svgElement.querySelector('defs');
+        if (defs) {
+          // Create blur filter
+          const filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+          filter.setAttribute("id", "blur-filter");
+          
+          const feGaussianBlur = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+          feGaussianBlur.setAttribute("stdDeviation", String(this._blur));
+          
+          filter.appendChild(feGaussianBlur);
+          defs.appendChild(filter);
+          
+          // Apply filter to the mask group
+          const maskGroup = svgElement.querySelector('mask g');
+          if (maskGroup) {
+            maskGroup.setAttribute("filter", "url(#blur-filter)");
+          }
+        }
+      }
+      
       this.container.appendChild(svgElement);
     }
 
@@ -176,19 +231,8 @@ class LayeredSections
       sectionElement.style.height = '100%';
       sectionElement.style.zIndex = String(index + 1);
 
-      // Add some test content and styling to make sections visible
-      if (!sectionElement.textContent?.trim()) {
-        sectionElement.innerHTML = `<div style="padding: 20px; height: 100vh; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">Layer ${index + 1}</div>`;
-      }
-
-      // Add background colors for testing
-      const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
-      sectionElement.style.backgroundColor = colors[index % colors.length];
-
-      console.log('made it here', index)
       // Apply the mask to reveal sections (skip the bottom layer)
       if (index > 0) {
-        console.log('hello!');
         sectionElement.style.mask = "url(#reveal-mask)";
         sectionElement.style.webkitMask = "url(#reveal-mask)";
       }
