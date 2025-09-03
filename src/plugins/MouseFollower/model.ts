@@ -133,7 +133,7 @@ class MouseFollower
 
   scaleOut() {
     if (this._radius !== 0) {
-      gsap.to(this, { _radius: 0, ease: "Power3.Out", duration: 0.1 });
+      gsap.to(this, { _radius: 0, ease: "Power3.Out", duration: 0.4 });
     }
   }
 
