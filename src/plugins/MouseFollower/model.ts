@@ -90,6 +90,7 @@ class MouseFollower
   }
 
   protected validateOptions(options: PluginOptions<IMouseFollowerOptions>) {
+    console.log('the options are', options);
     this.setOptions(options);
   }
 
