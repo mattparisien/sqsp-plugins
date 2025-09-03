@@ -30,6 +30,6 @@ export const pluginConfiguration: PluginConfiguration[] = [
     name: "LayeredSections",
     displayName: "Layered Sections",
     module: () => import("../../LayeredSections/model"),
-    isActive: true,
+    isActive: false,
   }
 ];

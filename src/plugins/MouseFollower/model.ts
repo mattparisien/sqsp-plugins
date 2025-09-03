@@ -7,6 +7,7 @@ import {
 import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { PluginOptions } from "../_lib/ts/types";
 import PluginBase from "../_PluginBase/model";
+import { HTML_SELECTOR_MAP, SQSP_BLOCK_SELECTOR_MAP } from "../_lib/config/domMappings";
 
 interface IMouseFollowerOptions {
   color: string;
@@ -31,12 +32,13 @@ class MouseFollower
   private _tickService: AnimationFrameService;
   private _mouseEventsService: MouseEventsService;
 
-  private _color: string = "red";
-  private _radius: number = 10;
-  private _speed: number = 0.2;
+  private _color: string = "#FBC9C2";
+  private _radius: number = 20;
+  private _speed: number = 0.1;
 
   private _colorProxy: string = this._color;
   private _radiusProxy: number = this._radius;
+  private _isHoveringInteractive: boolean = false;
 
   posX = 0;
   posY = 0;
@@ -155,6 +157,18 @@ class MouseFollower
       this.scaleIn();
       this.isDisabled = true;
     }
+
+    // Check if hovering over interactive elements
+    const target = event.target as HTMLElement;
+    const isOverInteractive = this.isOverInteractiveElement(target);
+    
+    if (isOverInteractive && !this._isHoveringInteractive) {
+      this._isHoveringInteractive = true;
+      this.scaleOut();
+    } else if (!isOverInteractive && this._isHoveringInteractive) {
+      this._isHoveringInteractive = false;
+      this.scaleIn();
+    }
   }
 
   onMouseEnter(event: MouseEvent): void { }
@@ -166,6 +180,30 @@ class MouseFollower
 
   addListeners() {
     window.addEventListener("resize", this.resizeCanvas.bind(this));
+  }
+
+  private isOverInteractiveElement(element: HTMLElement): boolean {
+    if (!element) return false;
+
+    // Check if the element itself matches interactive selectors
+    const buttonSelector = HTML_SELECTOR_MAP.get("button");
+    const linkSelector = HTML_SELECTOR_MAP.get("link");
+    const sqspButtonSelector = SQSP_BLOCK_SELECTOR_MAP.get("button");
+
+    if (buttonSelector && element.matches(buttonSelector)) return true;
+    if (linkSelector && element.matches(linkSelector)) return true;
+    if (sqspButtonSelector && element.matches(sqspButtonSelector)) return true;
+
+    // Check if any parent element matches interactive selectors
+    let parent = element.parentElement;
+    while (parent) {
+      if (buttonSelector && parent.matches(buttonSelector)) return true;
+      if (linkSelector && parent.matches(linkSelector)) return true;
+      if (sqspButtonSelector && parent.matches(sqspButtonSelector)) return true;
+      parent = parent.parentElement;
+    }
+
+    return false;
   }
 
   init() {

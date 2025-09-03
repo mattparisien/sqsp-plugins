@@ -17,6 +17,7 @@ export const UNIFIED_SELECTOR_MAP = new Map<string, SelectorConfig>([
   
   // Content elements
   ["button", { selector: ".sqs-block-button-element", category: "content" }],
+  ["link", { selector: "a", category: "content" }],
   ["section", { selector: "section.page-section", category: "content" }],
   
   // Plugin-specific elements
@@ -55,6 +56,7 @@ export const HTML_SELECTOR_MAP = new Map<string, string | null>([
   ["menu", getSelector("menu")],
   ["footer", getSelector("footer")],
   ["button", getSelector("button")],
+  ["link", getSelector("link")],
   ["section", getSelector("section")],
   ["LayeredSections", getSelector("LayeredSections")]
 ]);
