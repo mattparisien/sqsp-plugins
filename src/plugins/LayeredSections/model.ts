@@ -1,4 +1,4 @@
-import { HTML_SELECTOR_MAP } from "../_lib/config/domMappings";
+import { HTML_SELECTOR_MAP, SQSP_ENV_SELECTOR_MAP } from "../_lib/config/domMappings";
 import {
   AnimationFrameService
 } from "../_lib/services";
@@ -8,12 +8,14 @@ import PluginBase from "../_PluginBase/model";
 import maskSvg from "./assets/mask.svg";
 
 interface ILayeredSectionsOptions {
-
+  radius?: number;
+  blur?: number;
 }
 
 interface ILayeredSections {
   codeBlock: HTMLElement | null;
   init(): void;
+  destroy(): void;
 
 }
 
@@ -23,14 +25,31 @@ class LayeredSections
 
   private _color: string = "red";
   private _radius: number = 80;
+  private _blur: number = 0;
   private _step: number = 10;
   private _tickService: AnimationFrameService;
+  private _destroyed: boolean = false;
 
   codeBlock = null;
   svg = null;
   sections: HTMLElement[] = [];
+  originalDomState: {
+    parent: HTMLElement | null;
+    nextSibling: Node | null;
+    codeBlockDisplay: string;
+    sectionsData: Array<{
+      element: HTMLElement;
+      parent: HTMLElement | null;
+      nextSibling: Node | null;
+    }>;
+  } = {
+    parent: null,
+    nextSibling: null,
+    codeBlockDisplay: '',
+    sectionsData: []
+  };
 
-  allowedOptions: (keyof ILayeredSectionsOptions)[] = []
+  allowedOptions: (keyof ILayeredSectionsOptions)[] = ['radius', 'blur']
 
   constructor(container: any, options: PluginOptions<ILayeredSectionsOptions>) {
     super(container, "");
@@ -43,6 +62,21 @@ class LayeredSections
     }
 
     this.sections = DomUtils.getNextSiblings(this.codeBlock, HTML_SELECTOR_MAP.get("section"), 0);
+
+    // Ensure we have sections to work with
+    if (!this.sections?.length) {
+      console.warn("LayeredSections: No sibling sections found.");
+      return;
+    }
+
+    // Capture DOM state before wrapping
+    this.captureDomState();
+    
+    // Hide the code block
+    if (this.codeBlock) {
+      (this.codeBlock as HTMLElement).style.display = 'none';
+    }
+    
     this.container = DomUtils.wrapSiblings(this.sections[0], "div", 0, { "data-candlelight-plugin-layered-sections-container": "true" }, true);
     this.sections = Array.from(this.container.children).filter((child) => child.matches(HTML_SELECTOR_MAP.get("section"))) as HTMLElement[];
 
@@ -54,6 +88,71 @@ class LayeredSections
 
   protected validateOptions(options: PluginOptions<ILayeredSectionsOptions>) {
     this.setOptions(options);
+    
+    // Apply options
+    if (options.radius !== undefined) {
+      this._radius = options.radius;
+    }
+    if (options.blur !== undefined) {
+      this._blur = options.blur;
+    }
+  }
+
+  private captureDomState(): void {
+    if (!this.sections.length) return;
+
+    // Store the original parent of the first section (where we'll insert the wrapper)
+    const firstSection = this.sections[0];
+    this.originalDomState.parent = firstSection.parentElement;
+    this.originalDomState.nextSibling = firstSection.nextSibling;
+
+    // Store the original display style of the code block
+    if (this.codeBlock) {
+      this.originalDomState.codeBlockDisplay = (this.codeBlock as HTMLElement).style.display || '';
+    }
+
+    // Store data for each section that will be wrapped
+    this.originalDomState.sectionsData = this.sections.map(section => ({
+      element: section,
+      parent: section.parentElement,
+      nextSibling: section.nextSibling
+    }));
+
+    console.log('DOM state captured:', this.originalDomState);
+  }
+
+  restoreDomState(): void {
+    if (!this.originalDomState.parent || !this.originalDomState.sectionsData.length) {
+      console.warn('No original DOM state to restore');
+      return;
+    }
+
+    try {
+      // Restore the code block display style
+      if (this.codeBlock) {
+        (this.codeBlock as HTMLElement).style.display = this.originalDomState.codeBlockDisplay;
+      }
+
+      // Remove the wrapper container
+      if (this.container && this.container.parentElement) {
+        this.container.parentElement.removeChild(this.container);
+      }
+
+      // Restore each section to its original position
+      this.originalDomState.sectionsData.forEach(({ element, parent, nextSibling }) => {
+        if (parent) {
+          if (nextSibling) {
+            parent.insertBefore(element, nextSibling);
+          } else {
+            parent.appendChild(element);
+          }
+        }
+      });
+
+      console.log('DOM state restored successfully');
+    } catch (error) {
+      console.error('Error restoring DOM state:', error);
+    }
   }
 
   private appendSvgMask(): SVGElement {
@@ -66,6 +165,28 @@ class LayeredSections
     // Get the SVG element and append it to the container
     const svgElement = tempDiv.querySelector('svg');
     if (svgElement) {
+      // Add blur filter if blur is specified
+      if (this._blur > 0) {
+        const defs = svgElement.querySelector('defs');
+        if (defs) {
+          // Create blur filter
+          const filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+          filter.setAttribute("id", "blur-filter");
+          
+          const feGaussianBlur = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+          feGaussianBlur.setAttribute("stdDeviation", String(this._blur));
+          
+          filter.appendChild(feGaussianBlur);
+          defs.appendChild(filter);
+          
+          // Apply filter to the mask group
+          const maskGroup = svgElement.querySelector('mask g');
+          if (maskGroup) {
+            maskGroup.setAttribute("filter", "url(#blur-filter)");
+          }
+        }
+      }
+      
       this.container.appendChild(svgElement);
     }
 
@@ -110,19 +231,8 @@ class LayeredSections
       sectionElement.style.height = '100%';
       sectionElement.style.zIndex = String(index + 1);
 
-      // Add some test content and styling to make sections visible
-      if (!sectionElement.textContent?.trim()) {
-        sectionElement.innerHTML = `<div style="padding: 20px; height: 100vh; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">Layer ${index + 1}</div>`;
-      }
-
-      // Add background colors for testing
-      const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
-      sectionElement.style.backgroundColor = colors[index % colors.length];
-
-      console.log('made it here', index)
       // Apply the mask to reveal sections (skip the bottom layer)
       if (index > 0) {
-        console.log('hello!');
         sectionElement.style.mask = "url(#reveal-mask)";
         sectionElement.style.webkitMask = "url(#reveal-mask)";
       }
@@ -238,6 +348,12 @@ class LayeredSections
 
     // Handle resize: keep SVG sized to the viewport/container
     const resize = () => {
+      // Check if in dev mode and destroy plugin if needed (only once)
+      if (!this._destroyed && document.querySelector(SQSP_ENV_SELECTOR_MAP.get("DEV"))) {
+        this.destroy();
+        return;
+      }
+
       const rect = this.container.getBoundingClientRect();
       this.svg.setAttribute("width", String(rect.width));
       this.svg.setAttribute("height", String(rect.height));
@@ -246,6 +362,33 @@ class LayeredSections
 
     resize();
     window.addEventListener("resize", resize);
+  }
+
+  destroy(): void {
+    if (this._destroyed) {
+      console.log('LayeredSections plugin already destroyed');
+      return;
+    }
+
+    console.log('Destroying LayeredSections plugin...');
+    this._destroyed = true;
+    
+    // Remove event listeners
+    this.container?.removeEventListener("pointerdown", () => {});
+    window.removeEventListener("pointermove", () => {});
+    window.removeEventListener("pointerup", () => {});
+    window.removeEventListener("pointercancel", () => {});
+    window.removeEventListener("keydown", () => {});
+    window.removeEventListener("keyup", () => {});
+    window.removeEventListener("resize", () => {});
+    
+    // Stop animation service
+    this._tickService?.stopAnimation();
+    
+    // Restore original DOM state
+    this.restoreDomState();
+    
+    console.log('LayeredSections plugin destroyed');
   }
 }
 

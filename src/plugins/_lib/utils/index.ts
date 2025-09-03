@@ -100,13 +100,14 @@ export async function initializePlugin(pluginName: string): Promise<void> {
         );
       }
 
-      console.log("is dev", document.querySelector(SQSP_ENV_SELECTOR_MAP.get("DEV")));
-      console.log("document", document);
       isDev = document.querySelector(SQSP_ENV_SELECTOR_MAP.get("DEV"));
       
       if (isDev) {
         console.log("Development environment detected, skipping plugin load.");
         return;
+      } else {
+        console.log(`Initializing plugin: ${pluginName}`);
+        
       }
 
       options = getPluginOptionsFromScript(script);

@@ -13,7 +13,7 @@ export const pluginConfiguration: PluginConfiguration[] = [
     name: "MouseFollower",
     displayName: "Mouse Follower",
     module: () => import("../../MouseFollower/model"),
-    isActive: false,
+    isActive: true,
     tree: {
       element: "canvas",
       appendTo: HTML_SELECTOR_MAP.get("body"),
