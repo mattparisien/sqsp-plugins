@@ -27,6 +27,18 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 8vw;
+    padding: 2vw;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    
+    p {
+      margin: 0;
+      text-align: center;
+      max-width: 100%;
+      line-height: 1.1;
+    }
   }
 
   .page-section:nth-child(2) {
@@ -43,5 +55,15 @@ body {
     justify-content: flex-start;
     font-size: 5vw;
     padding: 2vw;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    
+    p {
+      margin: 0;
+      max-width: 100%;
+      line-height: 1.2;
+    }
   }
 }
