@@ -34,10 +34,6 @@ class MouseFollower
   private _canvasService: CanvasService;
   private _tickService: AnimationFrameService;
   private _mouseEventsService: MouseEventsService;
-  private _mouseMoveDebounceId: any = null;
-  private _mouseMoveDebounceMs: number = 100;
-  private _partyTimerId: any = null;
-  private _partyTimerMs: number = 500;
 
   private _color: string = "red";
   private _radius: number = 10;
@@ -78,10 +74,7 @@ class MouseFollower
 
     this._canvasService = new CanvasService(
       this.container as HTMLCanvasElement,
-      "2d",
-      {
-        blendMode: "exclusion",
-      }
+      "2d"
     );
     this._tickService = new AnimationFrameService(this.onTick.bind(this));
     this._mouseEventsService = new MouseEventsService(window, [
