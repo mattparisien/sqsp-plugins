@@ -29,8 +29,7 @@ interface IMouseFollower {
 
 class MouseFollower
   extends PluginBase<IMouseFollowerOptions>
-  implements IMouseFollower
-{
+  implements IMouseFollower {
   private _canvasService: CanvasService;
   private _tickService: AnimationFrameService;
   private _mouseEventsService: MouseEventsService;
@@ -61,6 +60,14 @@ class MouseFollower
   posY = 0;
   isDisabled = false;
 
+  options: PluginOptions<IMouseFollowerOptions> = {
+    mode: "default",
+    color: this._color,
+    radius: this._radius,
+    speed: this._speed,
+    palette: this._palette,
+  }
+
   allowedOptions: (keyof IMouseFollowerOptions)[] = [
     "color",
     "mode",
@@ -72,6 +79,7 @@ class MouseFollower
   constructor(container: any, options: PluginOptions<IMouseFollowerOptions>) {
     super(container, "Mouse Follower");
 
+    this.options = this.validateOptions(options);
     this._canvasService = new CanvasService(
       this.container as HTMLCanvasElement,
       "2d"
@@ -89,17 +97,37 @@ class MouseFollower
     ]);
   }
 
-  protected validateOptions(options: PluginOptions<IMouseFollowerOptions>) {
+  protected validateOptions(options: PluginOptions<IMouseFollowerOptions>): PluginOptions<IMouseFollowerOptions> {
     console.log('the options are', options);
     this.setOptions(options);
+    
+    // Parse and apply options
+    if (options.radius !== undefined) {
+      this._radius = typeof options.radius === 'string' ? parseFloat(options.radius) : options.radius;
+    }
+    if (options.speed !== undefined) {
+      this._speed = typeof options.speed === 'string' ? parseFloat(options.speed) : options.speed;
+    }
+    if (options.color !== undefined) {
+      this._color = options.color;
+    }
+    if (options.palette !== undefined) {
+      this._palette = Array.isArray(options.palette) ? options.palette : JSON.parse(options.palette as string);
+    }
+    
+    return this.options;
   }
 
   resizeCanvas() {
     this._canvasService.canvas.width = window.innerWidth;
     this._canvasService.canvas.height = window.innerHeight;
+    
+    // Make canvas background transparent
+    const ctx = this._canvasService.context as CanvasRenderingContext2D;
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }
 
-  lerp(start, end, t) {
+  lerp(start: number, end: number, t: number): number {
     return start * (1 - t) + end * t;
   }
 
@@ -134,7 +162,7 @@ class MouseFollower
   }
 
   onTick(): void {
-    
+
     this.posX = this.lerp(
       this.posX,
       this._mouseEventsService.clientX,
@@ -155,7 +183,7 @@ class MouseFollower
     }
   }
 
-  onMouseEnter(event: MouseEvent): void {}
+  onMouseEnter(event: MouseEvent): void { }
 
   onMouseOut(event: MouseEvent): void {
     // this.scaleOut();
@@ -173,6 +201,9 @@ class MouseFollower
     this._canvasService.init();
     this._tickService.init();
     this._mouseEventsService.init();
+
+    // Set canvas to be transparent
+    (this._canvasService.canvas as HTMLCanvasElement).style.backgroundColor = 'transparent';
 
     this.resizeCanvas();
     this.addListeners();
