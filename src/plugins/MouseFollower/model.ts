@@ -6,15 +6,12 @@ import {
 } from "../_lib/services";
 import { EMouseEvent } from "../_lib/services/MouseEventsService";
 import { PluginOptions } from "../_lib/ts/types";
-import ArrayUtils from "../_lib/utils/ArrayUtils";
 import PluginBase from "../_PluginBase/model";
 
 interface IMouseFollowerOptions {
-  mode: "default" | "party";
   color: string;
   radius: number;
   speed: number;
-  palette: string[];
 }
 
 interface IMouseFollower {
@@ -37,21 +34,6 @@ class MouseFollower
   private _color: string = "red";
   private _radius: number = 10;
   private _speed: number = 0.2;
-  private _palette: string[] = ArrayUtils.shuffle([
-    "#61833C",
-    "#DC8D82",
-    "#B32C2A",
-    "#DC969E",
-    "#CFCDC4",
-    "#507941",
-    "#CC7A3B",
-    "#7092AD",
-    "#AF6530",
-    "#F2AC0A",
-    "#F3D5B6",
-    "#B0A336",
-    "#AD9AB0",
-  ]);
 
   private _colorProxy: string = this._color;
   private _radiusProxy: number = this._radius;
@@ -61,17 +43,13 @@ class MouseFollower
   isDisabled = false;
 
   options: PluginOptions<IMouseFollowerOptions> = {
-    mode: "default",
     color: this._color,
     radius: this._radius,
     speed: this._speed,
-    palette: this._palette,
   }
 
   allowedOptions: (keyof IMouseFollowerOptions)[] = [
     "color",
-    "mode",
-    "palette",
     "radius",
     "speed",
   ];
@@ -98,9 +76,8 @@ class MouseFollower
   }
 
   protected validateOptions(options: PluginOptions<IMouseFollowerOptions>): PluginOptions<IMouseFollowerOptions> {
-    console.log('the options are', options);
     this.setOptions(options);
-    
+
     // Parse and apply options
     if (options.radius !== undefined) {
       this._radius = typeof options.radius === 'string' ? parseFloat(options.radius) : options.radius;
@@ -111,17 +88,14 @@ class MouseFollower
     if (options.color !== undefined) {
       this._color = options.color;
     }
-    if (options.palette !== undefined) {
-      this._palette = Array.isArray(options.palette) ? options.palette : JSON.parse(options.palette as string);
-    }
-    
+
     return this.options;
   }
 
   resizeCanvas() {
     this._canvasService.canvas.width = window.innerWidth;
     this._canvasService.canvas.height = window.innerHeight;
-    
+
     // Make canvas background transparent
     const ctx = this._canvasService.context as CanvasRenderingContext2D;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
