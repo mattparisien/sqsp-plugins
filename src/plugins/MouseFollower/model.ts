@@ -37,7 +37,7 @@ class MouseFollower
 
   private _color: string = "red";
   private _radius: number = 10;
-  private _speed: number = 0.1;
+  private _speed: number = 0.2;
   private _palette: string[] = ArrayUtils.shuffle([
     "#61833C",
     "#DC8D82",
