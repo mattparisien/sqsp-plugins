@@ -217,6 +217,10 @@ class MouseFollower
     // Set canvas to be transparent
     (this._canvasService.canvas as HTMLCanvasElement).style.backgroundColor = 'transparent';
 
+    // Initialize position to current mouse position
+    this.posX = this._mouseEventsService.clientX;
+    this.posY = this._mouseEventsService.clientY;
+
     this.resizeCanvas();
     this.addListeners();
     this.draw();
