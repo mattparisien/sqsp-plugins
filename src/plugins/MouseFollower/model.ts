@@ -35,6 +35,7 @@ class MouseFollower
   private _color: string = "#FBC9C2";
   private _radius: number = 20;
   private _speed: number = 0.1;
+  private _fadeSpeed: number = 0.4;
 
   private _colorProxy: string = this._color;
   private _radiusProxy: number = this._radius;
@@ -126,14 +127,14 @@ class MouseFollower
       gsap.to(this, {
         _radius: this._radiusProxy,
         ease: "Power3.Out",
-        duration: 0.1,
+        duration: this._fadeSpeed,
       });
     }
   }
 
   scaleOut() {
     if (this._radius !== 0) {
-      gsap.to(this, { _radius: 0, ease: "Power3.Out", duration: 0.4 });
+      gsap.to(this, { _radius: 0, ease: "Power3.Out", duration: this._fadeSpeed });
     }
   }
 
